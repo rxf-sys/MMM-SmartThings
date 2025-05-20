@@ -30,7 +30,13 @@ Module.register("MMM-SmartThings", {
     // Layout
     layout: "vertical", // "vertical", "horizontal", "grid"
     compactMode: false,
-    theme: "default" // "default", "dark", "colorful"
+    theme: "default", // "default", "dark", "colorful"
+    
+    // Performance & Debug
+    debug: false,
+    enablePerformanceMonitoring: true,
+    cacheEnabled: true,
+    showPerformanceStats: false
   },
 
   requiresVersion: "2.1.0",
@@ -45,6 +51,17 @@ Module.register("MMM-SmartThings", {
     this.error = null;
     this.loaded = false;
     
+    // Performance Monitoring
+    this.performance = {
+      renderTimes: [],
+      updateTimes: [],
+      lastRenderTime: 0,
+      domUpdates: 0
+    };
+    
+    // Debug-Capabilities
+    this.debugData = null;
+    
     // Validierung der Konfiguration
     if (!this.config.token) {
       this.error = "SmartThings Token fehlt in der Konfiguration";
@@ -58,29 +75,60 @@ Module.register("MMM-SmartThings", {
       return;
     }
     
+    // Debug-Modus aktivieren
+    if (this.config.debug) {
+      this.enableDebugMode();
+    }
+    
+    // Performance Monitoring aktivieren
+    if (this.config.enablePerformanceMonitoring) {
+      this.startPerformanceMonitoring();
+    }
+    
     // Erste Datenabfrage
     this.getData();
     
     // Regelmäßige Updates
-    setInterval(() => {
+    this.updateInterval = setInterval(() => {
       this.getData();
     }, this.config.updateInterval);
     
     // Chart-Updates (wenn aktiviert)
     if (this.config.showChart && this.config.powerDeviceIds.length > 0) {
-      setInterval(() => {
+      this.chartInterval = setInterval(() => {
         this.updatePowerHistory();
       }, this.config.chartUpdateInterval);
+    }
+    
+    // Keyboard shortcuts für Debug
+    if (this.config.debug) {
+      this.setupDebugKeyboardShortcuts();
     }
   },
 
   getData() {
+    const startTime = Date.now();
     this.sendSocketNotification("GET_DEVICE_DATA", {
       token: this.config.token,
       deviceIds: this.config.deviceIds,
       powerDeviceIds: this.config.powerDeviceIds,
-      notifications: this.config.notifications
+      notifications: this.config.notifications,
+      debug: this.config.debug
     });
+    
+    // Performance Tracking
+    if (this.config.enablePerformanceMonitoring) {
+      this.performance.updateTimes.push({
+        timestamp: new Date().toISOString(),
+        startTime,
+        type: 'getData'
+      });
+      
+      // Begrenzt auf 50 Einträge
+      if (this.performance.updateTimes.length > 50) {
+        this.performance.updateTimes = this.performance.updateTimes.slice(-25);
+      }
+    }
   },
   
   updatePowerHistory() {
@@ -92,12 +140,21 @@ Module.register("MMM-SmartThings", {
   },
 
   socketNotificationReceived(notification, payload) {
+    const startTime = Date.now();
+    
     switch (notification) {
       case "DEVICE_DATA":
         this.devices = payload.devices;
         this.lastUpdate = new Date();
         this.error = null;
         this.loaded = true;
+        
+        // Performance-Daten von Backend
+        if (payload.performance && this.config.enablePerformanceMonitoring) {
+          this.performance.lastBackendDuration = payload.performance.duration;
+          this.performance.lastCacheHit = payload.performance.cacheHit;
+        }
+        
         this.updateDom(300);
         break;
         
@@ -110,38 +167,90 @@ Module.register("MMM-SmartThings", {
         this.showNotification(payload);
         break;
         
+      case "DEBUG_DATA":
+        this.debugData = payload;
+        Log.info(`[${this.name}] Debug data received:`, payload);
+        break;
+        
       case "ERROR":
         this.error = payload.message;
         this.loaded = true;
         this.updateDom(300);
         Log.error(`[${this.name}] ${payload.message}`);
+        
+        // Performance-Tracking für Fehler
+        if (this.config.enablePerformanceMonitoring) {
+          this.performance.errors = this.performance.errors || [];
+          this.performance.errors.push({
+            timestamp: new Date().toISOString(),
+            message: payload.message,
+            operation: payload.operation || 'unknown'
+          });
+        }
         break;
+    }
+    
+    // Socket Notification Performance Tracking
+    if (this.config.enablePerformanceMonitoring) {
+      const duration = Date.now() - startTime;
+      this.performance.socketNotifications = this.performance.socketNotifications || [];
+      this.performance.socketNotifications.push({
+        timestamp: new Date().toISOString(),
+        notification,
+        duration
+      });
+      
+      // Begrenzt auf 30 Einträge
+      if (this.performance.socketNotifications.length > 30) {
+        this.performance.socketNotifications = this.performance.socketNotifications.slice(-15);
+      }
     }
   },
 
   getDom() {
+    const startTime = Date.now();
     const wrapper = document.createElement("div");
     wrapper.className = `mmm-smartthings ${this.config.theme} ${this.config.layout}`;
     
+    // Performance Stats anzeigen (wenn aktiviert)
+    if (this.config.showPerformanceStats && this.performance.lastRenderTime) {
+      const perfDiv = document.createElement("div");
+      perfDiv.className = "performance-stats";
+      perfDiv.innerHTML = `
+        <small>
+          Render: ${this.performance.lastRenderTime}ms | 
+          Backend: ${this.performance.lastBackendDuration || 'N/A'}ms |
+          Cache: ${this.performance.lastCacheHit ? 'HIT' : 'MISS'}
+        </small>
+      `;
+      wrapper.appendChild(perfDiv);
+    }
+    
     // Fehlerbehandlung
     if (this.error) {
-      wrapper.innerHTML = `
+      wrapper.innerHTML += `
         <div class="error">
           <i class="fas fa-exclamation-triangle"></i>
           <span>${this.error}</span>
+          ${this.config.debug ? `<br><small>Check console for debug information</small>` : ''}
         </div>
       `;
+      
+      // Performance-Messung auch bei Fehlern
+      this.trackRenderPerformance(startTime);
       return wrapper;
     }
     
     // Ladezustand
     if (!this.loaded) {
-      wrapper.innerHTML = `
+      wrapper.innerHTML += `
         <div class="loading">
           <i class="fas fa-spinner fa-spin"></i>
           <span>Lade SmartThings Daten...</span>
         </div>
       `;
+      
+      this.trackRenderPerformance(startTime);
       return wrapper;
     }
     
@@ -182,6 +291,9 @@ Module.register("MMM-SmartThings", {
     if (this.config.showChart && this.config.powerDeviceIds.length > 0) {
       setTimeout(() => this.initChart(), 100);
     }
+    
+    // Performance-Messung
+    this.trackRenderPerformance(startTime);
     
     return wrapper;
   },
@@ -472,6 +584,130 @@ Module.register("MMM-SmartThings", {
       hour: '2-digit',
       minute: '2-digit'
     });
+  },
+
+  // Debug & Performance Methoden
+  enableDebugMode() {
+    Log.info(`[${this.name}] Debug-Modus aktiviert`);
+    this.sendSocketNotification("ENABLE_DEBUG", { enabled: true });
+    
+    // Debug-Informationen alle 30 Sekunden abrufen
+    this.debugInterval = setInterval(() => {
+      this.sendSocketNotification("GET_DEBUG_DATA");
+    }, 30000);
+    
+    // Debug-Konsole Nachrichten
+    window.MMM_SmartThings_Debug = {
+      getPerformance: () => this.performance,
+      getDebugData: () => this.debugData,
+      clearCache: () => this.sendSocketNotification("CLEAR_CACHE"),
+      togglePerformanceStats: () => {
+        this.config.showPerformanceStats = !this.config.showPerformanceStats;
+        this.updateDom();
+      }
+    };
+    
+    Log.info(`[${this.name}] Debug-Tools verfügbar unter: window.MMM_SmartThings_Debug`);
+  },
+  
+  startPerformanceMonitoring() {
+    Log.info(`[${this.name}] Performance-Monitoring aktiviert`);
+    
+    // Memory Usage Tracking
+    this.memoryInterval = setInterval(() => {
+      if (performance.memory) {
+        this.performance.memoryUsage = this.performance.memoryUsage || [];
+        this.performance.memoryUsage.push({
+          timestamp: new Date().toISOString(),
+          used: performance.memory.usedJSHeapSize,
+          total: performance.memory.totalJSHeapSize,
+          limit: performance.memory.jsHeapSizeLimit
+        });
+        
+        // Begrenzt auf 20 Einträge
+        if (this.performance.memoryUsage.length > 20) {
+          this.performance.memoryUsage = this.performance.memoryUsage.slice(-10);
+        }
+      }
+    }, 60000); // Jede Minute
+  },
+  
+  trackRenderPerformance(startTime) {
+    if (!this.config.enablePerformanceMonitoring) return;
+    
+    const renderTime = Date.now() - startTime;
+    this.performance.lastRenderTime = renderTime;
+    this.performance.domUpdates++;
+    
+    this.performance.renderTimes.push({
+      timestamp: new Date().toISOString(),
+      duration: renderTime,
+      updateCount: this.performance.domUpdates
+    });
+    
+    // Begrenzt auf 30 Einträge
+    if (this.performance.renderTimes.length > 30) {
+      this.performance.renderTimes = this.performance.renderTimes.slice(-15);
+    }
+    
+    // Warnung bei langsamen Renders
+    if (renderTime > 100) {
+      Log.warn(`[${this.name}] Slow render detected: ${renderTime}ms`);
+    }
+  },
+  
+  setupDebugKeyboardShortcuts() {
+    document.addEventListener('keydown', (event) => {
+      // Ctrl+Shift+D für Debug-Daten
+      if (event.ctrlKey && event.shiftKey && event.key === 'D') {
+        event.preventDefault();
+        console.group('[MMM-SmartThings] Debug Information');
+        console.log('Performance:', this.performance);
+        console.log('Debug Data:', this.debugData);
+        console.log('Current Config:', this.config);
+        console.log('Devices:', this.devices);
+        console.groupEnd();
+      }
+      
+      // Ctrl+Shift+C für Cache leeren
+      if (event.ctrlKey && event.shiftKey && event.key === 'C') {
+        event.preventDefault();
+        this.sendSocketNotification("CLEAR_CACHE");
+        Log.info(`[${this.name}] Cache cleared via keyboard shortcut`);
+      }
+      
+      // Ctrl+Shift+P für Performance Stats togglen
+      if (event.ctrlKey && event.shiftKey && event.key === 'P') {
+        event.preventDefault();
+        this.config.showPerformanceStats = !this.config.showPerformanceStats;
+        this.updateDom();
+        Log.info(`[${this.name}] Performance stats ${this.config.showPerformanceStats ? 'enabled' : 'disabled'}`);
+      }
+    });
+  },
+  
+  // Cleanup bei Stop
+  stop() {
+    Log.info(`[${this.name}] Modul wird gestoppt - Cleanup...`);
+    
+    // Alle Intervals clearen
+    if (this.updateInterval) clearInterval(this.updateInterval);
+    if (this.chartInterval) clearInterval(this.chartInterval);
+    if (this.debugInterval) clearInterval(this.debugInterval);
+    if (this.memoryInterval) clearInterval(this.memoryInterval);
+    
+    // Chart cleanup
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+    
+    // Debug-Tools entfernen
+    if (window.MMM_SmartThings_Debug) {
+      delete window.MMM_SmartThings_Debug;
+    }
+    
+    Log.info(`[${this.name}] Cleanup abgeschlossen`);
   },
 
   getScripts() {

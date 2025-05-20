@@ -1,222 +1,308 @@
 # MMM-SmartThings
 
-Ein umfassendes MagicMirror-Modul zur Integration von Samsung SmartThings-Geräten mit Echtzeitdaten, interaktiven Charts und intelligenten Benachrichtigungen.
+MMM-SmartThings is a comprehensive smart home module for MagicMirror².
 
-## ✨ Features
+It displays real-time device status, power consumption charts, and intelligent notifications using data from the Samsung SmartThings API.
 
-### 🎯 Kernfunktionen
-- **Echtzeitüberwachung** aller SmartThings-Geräte
-- **Interaktive Charts** für Stromverbrauchsdaten
-- **Intelligente Benachrichtigungen** (Waschmaschine fertig, niedrige Batterie, etc.)
-- **Flexible Layouts** (vertikal, horizontal, Grid)
-- **Responsive Design** für verschiedene Bildschirmgrößen
-- **Mehrere Themes** (Standard, Dark, Colorful)
+## Screenshot
 
-### 📊 Unterstützte Geräte
-- Schalter und Steckdosen
-- Stromverbrauchsmesser
-- Temperatur- und Feuchtigkeitssensoren  
-- Tür- und Fensterkontakte
-- Bewegungsmelder
-- Batteriebetriebene Geräte
-- Waschmaschinen und Trockner
-- Beleuchtung
+![MMM-SmartThings Screenshot](screenshot.png)
 
-### 🔔 Benachrichtigungen
-- Waschmaschine/Trockner fertig
-- Niedrige Batterie (< 20%)
-- Türen/Fenster geöffnet
-- Anpassbare Benachrichtigungsregeln
+## Installation
 
-## 🚀 Installation
+1. Navigate into your MagicMirror modules folder and execute `git clone https://github.com/example/MMM-SmartThings.git`
+2. Enter the new MMM-SmartThings directory and execute `npm install`
 
-### 1. Modul herunterladen
-```bash
-cd ~/MagicMirror/modules
-git clone https://github.com/example/MMM-SmartThings.git
-cd MMM-SmartThings
-npm install
-```
+## Configuration
 
-### 2. SmartThings Personal Access Token erstellen
-1. Gehen Sie zur [SmartThings Developer Console](https://smartthings.developer.samsung.com/workspace/)
-2. Klicken Sie auf "Personal Access Tokens"
-3. Erstellen Sie einen neuen Token mit den Berechtigungen:
-   - `r:devices:*` (Geräte lesen)
-   - `r:deviceprofiles:*` (Geräteprofile lesen)
-   - `r:events:*` (Events lesen)
+At a minimum you need to supply the following required configuration parameters:
 
-### 3. Device IDs ermitteln
-```bash
-# Device IDs über die API abrufen
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-     https://api.smartthings.com/v1/devices
-```
+- `token`
+- `deviceIds`
 
-## ⚙️ Konfiguration
+The `token` needs to be specified as a String, while `deviceIds` should be an Array of device IDs.
 
-Fügen Sie das Modul zu Ihrer `config/config.js` hinzu:
+You need to create a Personal Access Token with SmartThings: https://smartthings.developer.samsung.com/workspace/
+
+Example configuration:
 
 ```javascript
 {
   module: "MMM-SmartThings",
   position: "top_right",
+  header: "Smart Home",
   config: {
-    // === ERFORDERLICH ===
-    token: "DEIN_SMARTTHINGS_TOKEN",
+    token: "your-smartthings-token-here",
     deviceIds: [
-      "device-id-1",
-      "device-id-2", 
+      "device-id-1", 
+      "device-id-2",
       "device-id-3"
+    ]
+  }
+}
+```
+
+To find your device IDs, use:
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" https://api.smartthings.com/v1/devices
+```
+
+## Configuration Options
+
+| Option | Description |
+|--------|-------------|
+| `token` | **Required.** Your SmartThings Personal Access Token.<br>**Type:** String |
+| `deviceIds` | **Required.** Array of SmartThings device IDs to display.<br>**Type:** Array<br>**Default:** `[]` |
+| `updateInterval` | How frequently, in milliseconds, to poll for device data.<br>**Type:** Number<br>**Default:** `60000` (1 minute) |
+| `chartUpdateInterval` | How frequently, in milliseconds, to update power consumption charts.<br>**Type:** Number<br>**Default:** `300000` (5 minutes) |
+| `showIcons` | Whether to show device type icons.<br>**Type:** Boolean<br>**Default:** `true` |
+| `showChart` | Whether to show power consumption charts.<br>**Type:** Boolean<br>**Default:** `true` |
+| `showLastUpdate` | Whether to show the last update timestamp.<br>**Type:** Boolean<br>**Default:** `true` |
+| `maxDevices` | Maximum number of devices to display.<br>**Type:** Number<br>**Default:** `10` |
+| `compactMode` | Whether to use compact display mode with less detail.<br>**Type:** Boolean<br>**Default:** `false` |
+| `layout` | Display layout for devices. One of: `"vertical"`, `"horizontal"`, or `"grid"`.<br>**Type:** String<br>**Default:** `"vertical"` |
+| `theme` | Visual theme. One of: `"default"`, `"dark"`, or `"colorful"`.<br>**Type:** String<br>**Default:** `"default"` |
+| `chartHistoryHours` | Number of hours of historical data to show in charts.<br>**Type:** Number<br>**Default:** `24` |
+| `powerDeviceIds` | Array of device IDs that support power monitoring for charts.<br>**Type:** Array<br>**Default:** `[]` |
+
+## Notification Options
+
+Configure which types of notifications to receive:
+
+| Option | Description |
+|--------|-------------|
+| `notifications.enabled` | Whether to enable notifications.<br>**Type:** Boolean<br>**Default:** `true` |
+| `notifications.washingMachine` | Notify when washing machine cycle completes.<br>**Type:** Boolean<br>**Default:** `true` |
+| `notifications.dryer` | Notify when dryer cycle completes.<br>**Type:** Boolean<br>**Default:** `true` |
+| `notifications.lowBattery` | Notify when device battery is low (< 20%).<br>**Type:** Boolean<br>**Default:** `true` |
+| `notifications.doorOpen` | Notify when doors/windows are opened.<br>**Type:** Boolean<br>**Default:** `true` |
+
+## Supported Device Types
+
+- **Switches and Outlets** - Smart plugs, wall switches
+- **Power Meters** - Energy monitoring devices  
+- **Temperature & Humidity Sensors** - Environmental monitoring
+- **Contact Sensors** - Door and window sensors
+- **Motion Sensors** - Movement detection
+- **Battery Devices** - Battery-powered sensors
+- **Appliances** - Washing machines, dryers
+- **Lighting** - Smart bulbs and dimmers
+
+## Themes
+
+### Default Theme
+Clean, minimal design with subtle colors and transparency effects.
+
+### Dark Theme  
+High-contrast dark theme with enhanced readability for dark environments.
+
+### Colorful Theme
+Color-coded devices by type with gradient backgrounds and visual emphasis.
+
+## Layout Options
+
+### Vertical Layout
+Devices are stacked vertically in a single column. Best for side positions like `top_left` or `top_right`.
+
+### Horizontal Layout
+Devices are arranged horizontally in rows. Good for `top_center` or `bottom_center` positions.
+
+### Grid Layout
+Devices are arranged in an automatic grid pattern. Ideal for `middle_center` when displaying many devices.
+
+## Sample Configuration
+
+```javascript
+{
+  module: "MMM-SmartThings",
+  position: "top_right",
+  header: "Smart Home",
+  config: {
+    token: "your-smartthings-token-here",
+    deviceIds: [
+      "switch-living-room",
+      "sensor-front-door", 
+      "washing-machine",
+      "power-meter-kitchen"
     ],
     
-    // === OPTIONAL ===
-    // Update-Intervalle
-    updateInterval: 60 * 1000,        // 1 Minute
-    chartUpdateInterval: 5 * 60 * 1000, // 5 Minuten
+    updateInterval: 30000,
+    chartUpdateInterval: 300000,
     
-    // Anzeige-Optionen
     showIcons: true,
     showChart: true,
     showLastUpdate: true,
-    maxDevices: 10,
+    maxDevices: 8,
     compactMode: false,
     
-    // Layout und Theme
-    layout: "vertical",    // "vertical", "horizontal", "grid"
-    theme: "default",      // "default", "dark", "colorful"
+    layout: "vertical",
+    theme: "colorful",
     
-    // Chart-Konfiguration
-    chartHistoryHours: 24,
-    powerDeviceIds: [      // Geräte für Stromverbrauchschart
-      "power-device-id-1",
-      "power-device-id-2"
+    chartHistoryHours: 48,
+    powerDeviceIds: [
+      "power-meter-kitchen",
+      "washing-machine"
     ],
     
-    // Benachrichtigungen
     notifications: {
       enabled: true,
       washingMachine: true,
       dryer: true,
       lowBattery: true,
-      doorOpen: true
+      doorOpen: false
     }
   }
 }
 ```
 
-## 🎨 Themes und Layouts
+## Advanced Configuration Examples
 
-### Verfügbare Themes
-- **default**: Standarddesign mit subtilen Farben
-- **dark**: Dunkles Theme mit erhöhtem Kontrast  
-- **colorful**: Farbcodierte Geräte nach Typ
-
-### Layout-Optionen
-- **vertical**: Geräte untereinander (Standard)
-- **horizontal**: Geräte nebeneinander
-- **grid**: Automatisches Grid-Layout
-
-## 📱 Responsive Design
-
-Das Modul passt sich automatisch an verschiedene Bildschirmgrößen an:
-- **Desktop**: Vollständige Ansicht mit allen Details
-- **Tablet**: Optimierte Darstellung für mittelgroße Bildschirme
-- **Mobile**: Kompakte Ansicht mit den wichtigsten Informationen
-
-## 🔧 Erweiterte Konfiguration
-
-### Device-spezifische Einstellungen
+### Minimal Configuration
 ```javascript
-// Beispiel für erweiterte Gerätekonfiguration
-config: {
-  // Spezielle Behandlung für bestimmte Geräte
-  deviceSettings: {
-    "waschmaschine-id": {
-      icon: "fas fa-tshirt",
-      notifications: ["finished", "error"],
-      chartEnabled: true
-    }
+{
+  module: "MMM-SmartThings",
+  position: "bottom_left",
+  config: {
+    token: "your-token",
+    deviceIds: ["device-1", "device-2"],
+    compactMode: true,
+    showChart: false,
+    layout: "horizontal"
   }
 }
 ```
 
-### Custom CSS
-Sie können das Erscheinungsbild durch eigene CSS-Regeln anpassen:
+### Power Monitoring Focus
+```javascript
+{
+  module: "MMM-SmartThings", 
+  position: "middle_center",
+  config: {
+    token: "your-token",
+    deviceIds: ["power-device-1"],
+    powerDeviceIds: ["power-device-1"],
+    showChart: true,
+    chartHistoryHours: 72,
+    layout: "vertical",
+    theme: "dark"
+  }
+}
+```
+
+### Grid Layout for Many Devices
+```javascript
+{
+  module: "MMM-SmartThings",
+  position: "top_center", 
+  config: {
+    token: "your-token",
+    deviceIds: ["dev-1", "dev-2", "dev-3", "dev-4", "dev-5", "dev-6"],
+    layout: "grid",
+    maxDevices: 20,
+    compactMode: true,
+    theme: "colorful"
+  }
+}
+```
+
+## Getting Your SmartThings Token
+
+1. Go to the [SmartThings Developer Console](https://smartthings.developer.samsung.com/workspace/)
+2. Click on "Personal Access Tokens"
+3. Create a new token with these permissions:
+   - `r:devices:*` (Read devices)
+   - `r:deviceprofiles:*` (Read device profiles)  
+   - `r:events:*` (Read events)
+4. Copy the generated token to your configuration
+
+## Finding Device IDs
+
+Use the SmartThings API to list all your devices:
+
+```bash
+# List all devices
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     https://api.smartthings.com/v1/devices
+
+# Get detailed info for a specific device
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     https://api.smartthings.com/v1/devices/DEVICE_ID
+
+# Check device status
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     https://api.smartthings.com/v1/devices/DEVICE_ID/status
+```
+
+You can also use tools like `jq` to format the output:
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     https://api.smartthings.com/v1/devices | \
+     jq '.items[] | {deviceId, label, deviceTypeName}'
+```
+
+## Styling
+
+This module is responsive and adapts to different screen sizes automatically. You can customize the appearance by adding CSS to your `custom.css` file:
 
 ```css
-/* Beispiel für custom styling */
+/* Adjust module width */
+.mmm-smartthings {
+  max-width: 400px;
+}
+
+/* Customize device cards */
+.mmm-smartthings .device {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+/* Custom theme */
 .mmm-smartthings.my-custom-theme .device {
   background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
 }
 ```
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
-### Häufige Probleme
+### Common Issues
 
-**1. "Token fehlt" Fehler**
-- Überprüfen Sie, ob der Token korrekt in der config.js eingetragen ist
-- Stellen Sie sicher, dass der Token die richtigen Berechtigungen hat
+**"Token fehlt" Error**
+- Verify your token is correctly set in the configuration
+- Ensure the token has the required permissions
 
-**2. Geräte werden nicht angezeigt**
-- Überprüfen Sie die Device IDs in der Browserkonsole
-- Verwenden Sie die SmartThings API direkt zum Testen
+**Devices Not Appearing**
+- Check device IDs in browser developer console
+- Test device IDs directly with the SmartThings API
+- Verify devices are online in the SmartThings app
 
-**3. Chart wird nicht angezeigt**
-- Überprüfen Sie, ob Chart.js ordnungsgemäß geladen wird
-- Stellen Sie sicher, dass `powerDeviceIds` konfiguriert sind
+**Charts Not Displaying**
+- Ensure Chart.js is loading properly
+- Verify `powerDeviceIds` are configured correctly
+- Check that devices actually report power consumption
 
-### Debug-Modus
+### Debug Mode
+
+Enable debug output by adding this to your browser console:
 ```javascript
-// In der Browserkonsole
 localStorage.setItem('mmm-smartthings-debug', 'true');
 ```
 
-### Log-Ausgaben überprüfen
+### Log Output
+
+Check MagicMirror logs for detailed error information:
 ```bash
-# MagicMirror Logs anzeigen
 pm2 logs mm
 ```
 
-## 🤝 Beitragen
+## For Module Developers
 
-Verbesserungen sind willkommen! Bitte:
+This module broadcasts notifications when device data is updated. The notification is `SMARTTHINGS_UPDATE` and the payload contains the device data array from the SmartThings API.
 
-1. Forken Sie das Repository
-2. Erstellen Sie einen Feature-Branch (`git checkout -b feature/AmazingFeature`)
-3. Committen Sie Ihre Änderungen (`git commit -m 'Add some AmazingFeature'`)
-4. Pushen Sie den Branch (`git push origin feature/AmazingFeature`)
-5. Öffnen Sie einen Pull Request
+## Credits
 
-## 📄 Lizenz
+Developed for the MagicMirror² platform. Uses the Samsung SmartThings API, Chart.js for visualizations, and Font Awesome for icons.
 
-Dieses Projekt ist unter der MIT-Lizenz veröffentlicht - siehe [LICENSE](LICENSE) Datei für Details.
-
-## 🙏 Danksagungen
-
-- MagicMirror² Community
-- Samsung SmartThings Team
-- Chart.js Entwickler
-- Font Awesome für die Icons
-
-## 📞 Support
-
-Bei Problemen oder Fragen:
-- [GitHub Issues](https://github.com/example/MMM-SmartThings/issues)
-- [MagicMirror Forum](https://forum.magicmirror.builders/)
-
-## 🔄 Changelog
-
-### Version 2.0.0
-- ✨ Komplett überarbeitete Benutzeroberfläche
-- 📊 Interaktive Charts für Stromverbrauch
-- 🔔 Intelligente Benachrichtigungen
-- 🎨 Mehrere Themes und Layouts
-- 📱 Responsive Design
-- 🛠️ Verbesserte Fehlerbehandlung
-- ⚡ Performance-Optimierungen
+## Changelog
 
 ### Version 1.0.0
-- 🎉 Erste Version mit Grundfunktionalität
+- Initial release with basic SmartThings integration

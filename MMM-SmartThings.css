@@ -385,7 +385,73 @@
   animation: fa-spin 2s infinite linear;
 }
 
-/* ===== Scrollbar Styling ===== */
+/* ===== Performance Stats ===== */
+.mmm-smartthings .performance-stats {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-bottom: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: #00ff00;
+  border: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.mmm-smartthings .performance-stats small {
+  opacity: 0.8;
+}
+
+/* ===== Enhanced Error States ===== */
+.mmm-smartthings .error {
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: 6px;
+  padding: 15px;
+  margin: 10px 0;
+}
+
+.mmm-smartthings .error small {
+  opacity: 0.7;
+  font-size: 11px;
+  margin-top: 5px;
+  display: block;
+}
+
+/* ===== Loading Enhancements ===== */
+.mmm-smartthings .loading {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 20px;
+  margin: 10px 0;
+}
+
+.mmm-smartthings .loading i {
+  color: #2196F3;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ===== Debug Mode Indicators ===== */
+.mmm-smartthings.debug-mode {
+  border: 2px dashed rgba(0, 255, 0, 0.3);
+}
+
+.mmm-smartthings.debug-mode::before {
+  content: "🐛 DEBUG MODE";
+  position: absolute;
+  top: -15px;
+  right: 0;
+  background: rgba(0, 255, 0, 0.8);
+  color: #000;
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: 3px;
+  font-weight: bold;
+}
 .mmm-smartthings .devices-container::-webkit-scrollbar {
   width: 4px;
 }
