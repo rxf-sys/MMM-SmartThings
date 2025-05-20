@@ -186,7 +186,7 @@ Module.register("MMM-SmartThings", {
         });
 
         this.powerHistory = payload;
-
+        
         // Force chart update after power history is received
         setTimeout(() => {
           this.debugLog("🔄 Triggering chart update after power history");
@@ -309,27 +309,46 @@ Module.register("MMM-SmartThings", {
     `;
     wrapper.appendChild(header);
 
-    // Chart (wenn aktiviert und Daten vorhanden)
+    // Chart (wenn aktiviert und Daten vorhanden) - IMPROVED STRUCTURE
     if (this.config.showChart && this.config.powerDeviceIds.length > 0) {
       const chartContainer = document.createElement("div");
       chartContainer.className = "chart-container";
-
+      
+      // Add debug attributes if debug mode is active
+      if (this.config.debug) {
+        chartContainer.setAttribute('data-chart-status', 
+          this.powerHistory && Object.keys(this.powerHistory).length > 0 ? 'Data Available' : 'No Data'
+        );
+      }
+      
       const chartTitle = document.createElement("h3");
       chartTitle.textContent = "Stromverbrauch";
       chartContainer.appendChild(chartTitle);
-
+      
+      // Create wrapper for better size control
+      const chartWrapper = document.createElement("div");
+      chartWrapper.className = "chart-wrapper";
+      
       const canvas = document.createElement("canvas");
       canvas.id = `smartthings-chart-${this.identifier}`;
+      
+      // CRITICAL: Set initial canvas attributes
       canvas.width = 400;
-      canvas.height = 200;
-      chartContainer.appendChild(canvas);
-
+      canvas.height = 250;
+      canvas.style.width = '100%';
+      canvas.style.height = '250px';
+      canvas.style.maxHeight = '250px';
+      
+      chartWrapper.appendChild(canvas);
+      chartContainer.appendChild(chartWrapper);
       wrapper.appendChild(chartContainer);
 
-      this.debugLog("📊 Chart container added to DOM", {
+      this.debugLog("📊 Chart container added to DOM with size constraints", {
         canvasId: canvas.id,
         powerDeviceIds: this.config.powerDeviceIds,
-        hasPowerHistory: !!this.powerHistory && Object.keys(this.powerHistory).length > 0
+        hasPowerHistory: !!this.powerHistory && Object.keys(this.powerHistory).length > 0,
+        canvasSize: `${canvas.width} x ${canvas.height}`,
+        canvasStyle: `${canvas.style.width} x ${canvas.style.height}`
       });
     }
 
@@ -347,17 +366,18 @@ Module.register("MMM-SmartThings", {
     // Chart nach DOM-Update erstellen (wenn Daten vorhanden)
     if (this.config.showChart && this.config.powerDeviceIds.length > 0) {
       setTimeout(() => {
-        this.debugLog("⏰ Chart initialization triggered", {
+        this.debugLog("⏰ Chart initialization triggered with delay", {
           powerHistoryAvailable: !!this.powerHistory && Object.keys(this.powerHistory).length > 0,
-          chartExists: !!this.chart
+          chartExists: !!this.chart,
+          canvasInDom: !!document.getElementById(`smartthings-chart-${this.identifier}`)
         });
-
+        
         if (this.powerHistory && Object.keys(this.powerHistory).length > 0) {
           this.initChart();
         } else {
           this.debugLog("⚠️ No power history data available for chart initialization");
         }
-      }, 100);
+      }, 200); // Slightly longer delay for DOM stability
     }
 
     // Performance-Messung
@@ -417,7 +437,7 @@ Module.register("MMM-SmartThings", {
     return deviceDiv;
   },
 
-    debugLog(message, data = {}) {
+  debugLog(message, data = {}) {
     if (this.config.debug) {
       console.log(`[${this.name} Frontend] ${message}`, data);
     }
@@ -455,28 +475,6 @@ Module.register("MMM-SmartThings", {
     if (main.battery) return "fas fa-battery-half";
 
     return "fas fa-microchip";
-  },
-
-  getDeviceIconClass(device) {
-    const main = device.components?.main || {};
-    const deviceName = device.name.toLowerCase();
-
-    // Spezifische Gerätetypen nach Name
-    if (deviceName.includes("wasch")) return "waschmaschine";
-    if (deviceName.includes("trockner")) return "trockner";
-    if (deviceName.includes("licht") || deviceName.includes("light")) return "licht";
-    if (deviceName.includes("tür") || deviceName.includes("door")) return "tuer";
-    if (deviceName.includes("fenster") || deviceName.includes("window")) return "fenster";
-
-    // Capability-basierte Icons
-    if (main.switch) return "switch-device";
-    if (main.powerMeter) return "power-device";
-    if (main.temperatureMeasurement) return "temperature-device";
-    if (main.contactSensor) return "contact-device";
-    if (main.motionSensor) return "motion-device";
-    if (main.battery) return "battery-device";
-
-    return "generic";
   },
 
   getDeviceStatus(device) {
@@ -566,25 +564,25 @@ Module.register("MMM-SmartThings", {
   },
 
   initChart() {
-    // Chart initialization method - fixed version
+    // Chart initialization method - fixed version with proper sizing
     const canvas = document.getElementById(`smartthings-chart-${this.identifier}`);
     if (!canvas) {
-      this.debugLog("❌ Chart canvas not found", {
+      this.debugLog("❌ Chart canvas not found", { 
         expectedId: `smartthings-chart-${this.identifier}`,
-        canvasExists: !!canvas
+        canvasExists: !!canvas 
       });
       return;
     }
 
     if (!window.Chart) {
-      this.debugLog("❌ Chart.js not loaded", {
+      this.debugLog("❌ Chart.js not loaded", { 
         windowChart: typeof window.Chart,
-        suggestion: "Check if Chart.js CDN is accessible"
+        suggestion: "Check if Chart.js CDN is accessible" 
       });
       return;
     }
 
-    this.debugLog("🎨 Initializing chart", {
+    this.debugLog("🎨 Initializing chart with size constraints", {
       canvasId: canvas.id,
       powerHistoryKeys: Object.keys(this.powerHistory || {}),
       chartJsVersion: window.Chart.version || 'unknown'
@@ -597,6 +595,11 @@ Module.register("MMM-SmartThings", {
       this.chart.destroy();
       this.debugLog("🗑️ Destroyed existing chart");
     }
+
+    // CRITICAL: Set canvas size explicitly
+    canvas.style.width = '100%';
+    canvas.style.height = '250px';
+    canvas.style.maxHeight = '250px';
 
     // Prepare chart data
     const datasets = Object.entries(this.powerHistory || {}).map(([deviceId, data], index) => {
@@ -617,13 +620,14 @@ Module.register("MMM-SmartThings", {
     });
 
     // Use timestamps from first device
-    const timestamps = Object.keys(this.powerHistory || {}).length > 0
+    const timestamps = Object.keys(this.powerHistory || {}).length > 0 
       ? this.powerHistory[Object.keys(this.powerHistory)[0]]?.timestamps || []
       : [];
 
     this.debugLog("📊 Chart data prepared", {
       datasets: datasets.length,
       timestamps: timestamps.length,
+      canvasSize: `${canvas.style.width} x ${canvas.style.height}`,
       sampleData: datasets.map(d => ({
         label: d.label,
         dataPoints: d.data.length,
@@ -639,8 +643,21 @@ Module.register("MMM-SmartThings", {
           datasets: datasets
         },
         options: {
+          // CRITICAL: Size and responsiveness settings
           responsive: true,
-          maintainAspectRatio: false,
+          maintainAspectRatio: false, // IMPORTANT: Allows custom height
+          aspectRatio: false, // IMPORTANT: Disables aspect ratio
+          
+          // Layout constraints
+          layout: {
+            padding: {
+              top: 10,
+              bottom: 10,
+              left: 10,
+              right: 10
+            }
+          },
+          
           plugins: {
             title: {
               display: true,
@@ -656,7 +673,8 @@ Module.register("MMM-SmartThings", {
               labels: {
                 color: '#ffffff',
                 fontSize: 12,
-                usePointStyle: true
+                usePointStyle: true,
+                padding: 10
               }
             }
           },
@@ -670,7 +688,8 @@ Module.register("MMM-SmartThings", {
               },
               ticks: {
                 color: '#ffffff',
-                maxTicksLimit: 8
+                maxTicksLimit: 8,
+                maxRotation: 45
               },
               grid: {
                 color: 'rgba(255, 255, 255, 0.1)'
@@ -702,15 +721,39 @@ Module.register("MMM-SmartThings", {
           elements: {
             line: {
               borderWidth: 2
+            },
+            point: {
+              radius: 2,
+              hoverRadius: 4
             }
-          }
+          },
+          
+          // Animation settings for performance
+          animation: {
+            duration: 1000
+          },
+          
+          // Performance optimizations
+          spanGaps: true,
+          normalized: true,
+          parsing: false
         }
       });
 
-      this.debugLog("✅ Chart created successfully", {
+      // Force resize after creation
+      setTimeout(() => {
+        if (this.chart) {
+          this.chart.resize();
+          this.debugLog("🔄 Chart resized after creation");
+        }
+      }, 100);
+
+      this.debugLog("✅ Chart created successfully with size constraints", {
         chartType: this.chart.config.type,
         datasetCount: this.chart.data.datasets.length,
-        labelCount: this.chart.data.labels.length
+        labelCount: this.chart.data.labels.length,
+        maintainAspectRatio: this.chart.options.maintainAspectRatio,
+        canvasSize: `${canvas.style.width} x ${canvas.style.height}`
       });
 
     } catch (error) {
@@ -753,7 +796,7 @@ Module.register("MMM-SmartThings", {
       this.chart.data.labels = timestamps;
       this.chart.data.datasets = datasets;
       this.chart.update('none'); // No animation for better performance
-
+      
       this.debugLog("✅ Chart updated successfully", {
         labelsCount: timestamps.length,
         datasetsCount: datasets.length
@@ -909,10 +952,10 @@ Module.register("MMM-SmartThings", {
   },
 
   getScripts() {
-  return [
-    "https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.js" // Fixed URL
-  ];
-},
+    return [
+      "https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.js"
+    ];
+  },
 
   getStyles() {
     return [
