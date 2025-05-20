@@ -65,6 +65,15 @@ curl -H "Authorization: Bearer YOUR_TOKEN" https://api.smartthings.com/v1/device
 | `chartHistoryHours` | Number of hours of historical data to show in charts.<br>**Type:** Number<br>**Default:** `24` |
 | `powerDeviceIds` | Array of device IDs that support power monitoring for charts.<br>**Type:** Array<br>**Default:** `[]` |
 
+## Performance & Debug Options
+
+| Option | Description |
+|--------|-------------|
+| `debug` | Enable debug mode with detailed console logging and debug tools.<br>**Type:** Boolean<br>**Default:** `false` |
+| `enablePerformanceMonitoring` | Track render times, API calls, and memory usage.<br>**Type:** Boolean<br>**Default:** `true` |
+| `cacheEnabled` | Enable intelligent data caching to reduce API calls.<br>**Type:** Boolean<br>**Default:** `true` |
+| `showPerformanceStats` | Display performance statistics in the module header.<br>**Type:** Boolean<br>**Default:** `false` |
+
 ## Notification Options
 
 Configure which types of notifications to receive:
@@ -150,7 +159,12 @@ Devices are arranged in an automatic grid pattern. Ideal for `middle_center` whe
       dryer: true,
       lowBattery: true,
       doorOpen: false
-    }
+    },
+    
+    // Performance & Debug
+    debug: false,
+    enablePerformanceMonitoring: true,
+    showPerformanceStats: false
   }
 }
 ```
@@ -205,6 +219,22 @@ Devices are arranged in an automatic grid pattern. Ideal for `middle_center` whe
 }
 ```
 
+### Debug and Performance Monitoring
+```javascript
+{
+  module: "MMM-SmartThings",
+  position: "bottom_right",
+  config: {
+    token: "your-token",
+    deviceIds: ["device-1", "device-2"],
+    debug: true,
+    enablePerformanceMonitoring: true,
+    showPerformanceStats: true,
+    layout: "vertical"
+  }
+}
+```
+
 ## Getting Your SmartThings Token
 
 1. Go to the [SmartThings Developer Console](https://smartthings.developer.samsung.com/workspace/)
@@ -240,6 +270,54 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
      jq '.items[] | {deviceId, label, deviceTypeName}'
 ```
 
+## Debug Mode and Performance Monitoring
+
+### Enabling Debug Mode
+
+Set `debug: true` in your configuration to enable comprehensive debugging:
+
+```javascript
+config: {
+  debug: true,
+  enablePerformanceMonitoring: true,
+  showPerformanceStats: true
+}
+```
+
+### Debug Console Tools
+
+When debug mode is enabled, access these tools in your browser console:
+
+```javascript
+// Get current performance metrics
+window.MMM_SmartThings_Debug.getPerformance()
+
+// View debug data from backend
+window.MMM_SmartThings_Debug.getDebugData()
+
+// Clear data cache manually
+window.MMM_SmartThings_Debug.clearCache()
+
+// Toggle performance stats display
+window.MMM_SmartThings_Debug.togglePerformanceStats()
+```
+
+### Keyboard Shortcuts
+
+When debug mode is active, use these keyboard shortcuts:
+
+- **Ctrl+Shift+D** - Log debug information to console
+- **Ctrl+Shift+C** - Clear data cache
+- **Ctrl+Shift+P** - Toggle performance statistics display
+
+### Performance Statistics
+
+Enable `showPerformanceStats: true` to display real-time performance metrics:
+
+- **Render Time** - DOM update duration in milliseconds
+- **Backend Duration** - API call processing time
+- **Cache Status** - HIT or MISS for data requests
+
 ## Styling
 
 This module is responsive and adapts to different screen sizes automatically. You can customize the appearance by adding CSS to your `custom.css` file:
@@ -260,7 +338,37 @@ This module is responsive and adapts to different screen sizes automatically. Yo
 .mmm-smartthings.my-custom-theme .device {
   background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
 }
+
+/* Hide performance stats */
+.mmm-smartthings .performance-stats {
+  display: none;
+}
 ```
+
+## Performance Features
+
+### Intelligent Caching
+- **30-second TTL cache** reduces API calls significantly
+- **Smart cache invalidation** ensures data freshness
+- **Memory-efficient** caching with automatic cleanup
+
+### API Optimization
+- **Exponential backoff** retry logic (1s, 2s, 4s, max 10s)
+- **Request rate limiting** prevents API throttling
+- **Timeout protection** (10-second request timeout)
+- **Concurrent request management** with proper delays
+
+### Memory Management
+- **Automatic cleanup** every 10 minutes
+- **Bounded collections** prevent memory leaks
+- **Garbage collection** triggers when available
+- **Memory usage tracking** for monitoring
+
+### Error Recovery
+- **Graceful degradation** when services are unavailable
+- **Detailed error logging** for troubleshooting
+- **Automatic retry** with intelligent backoff
+- **User-friendly error messages** with actionable information
 
 ## Troubleshooting
 
@@ -280,12 +388,91 @@ This module is responsive and adapts to different screen sizes automatically. Yo
 - Verify `powerDeviceIds` are configured correctly
 - Check that devices actually report power consumption
 
-### Debug Mode
+## Troubleshooting
 
-Enable debug output by adding this to your browser console:
+### Common Issues
+
+**"Token fehlt" Error**
+- Verify your token is correctly set in the configuration
+- Ensure the token has the required permissions
+- Check token expiration in SmartThings Developer Console
+
+**Devices Not Appearing**
+- Check device IDs in browser developer console
+- Test device IDs directly with the SmartThings API
+- Verify devices are online in the SmartThings app
+- Enable debug mode for detailed logging
+
+**Charts Not Displaying**
+- Ensure Chart.js is loading properly (check browser console)
+- Verify `powerDeviceIds` are configured correctly
+- Check that devices actually report power consumption
+- Confirm devices support the `powerMeter` capability
+
+**Poor Performance**
+- Check `showPerformanceStats` for bottleneck identification
+- Reduce `updateInterval` if updates are too frequent
+- Enable caching with `cacheEnabled: true`
+- Consider using `compactMode` for many devices
+
+### Debug Mode Steps
+
+1. **Enable Debug Mode**
+   ```javascript
+   config: {
+     debug: true,
+     enablePerformanceMonitoring: true
+   }
+   ```
+
+2. **Check Browser Console**
+   - Look for detailed logs prefixed with `[MMM-SmartThings DEBUG]`
+   - Monitor API call success/failure rates
+   - Check for memory usage warnings
+
+3. **Use Debug Tools**
+   ```javascript
+   // In browser console
+   window.MMM_SmartThings_Debug.getPerformance()
+   window.MMM_SmartThings_Debug.getDebugData()
+   ```
+
+4. **Performance Analysis**
+   - Enable `showPerformanceStats: true`
+   - Monitor render times (should be < 100ms)
+   - Check cache hit rates (should be > 80%)
+   - Watch for memory leaks in long running sessions
+
+### Advanced Debugging
+
+**API Call Monitoring**
 ```javascript
-localStorage.setItem('mmm-smartthings-debug', 'true');
+// Check recent API calls
+window.MMM_SmartThings_Debug.getDebugData().apiCalls
 ```
+
+**Memory Usage Tracking**
+```javascript
+// Monitor memory consumption
+window.MMM_SmartThings_Debug.getPerformance().memoryUsage
+```
+
+**Cache Analysis**
+```javascript
+// Cache performance metrics
+window.MMM_SmartThings_Debug.getDebugData().cache
+```
+
+### Performance Benchmarks
+
+For optimal performance, aim for these targets:
+
+| Metric | Target | Action if Exceeded |
+|--------|--------|-------------------|
+| Render Time | < 100ms | Enable compact mode, reduce devices |
+| API Duration | < 2000ms | Check network, enable caching |
+| Memory Usage | < 50MB | Restart module, check for leaks |
+| Cache Hit Rate | > 80% | Increase cache TTL, optimize intervals |
 
 ### Log Output
 
@@ -296,13 +483,79 @@ pm2 logs mm
 
 ## For Module Developers
 
-This module broadcasts notifications when device data is updated. The notification is `SMARTTHINGS_UPDATE` and the payload contains the device data array from the SmartThings API.
+This module broadcasts notifications when device data is updated and provides a comprehensive API for other modules.
+
+### Broadcast Notifications
+
+**Device Data Updates**
+```javascript
+// Listen for device updates
+this.socketNotificationReceived = function(notification, payload) {
+  if (notification === "SMARTTHINGS_UPDATE") {
+    // payload.devices contains all device data
+    // payload.performance contains timing information
+  }
+}
+```
+
+**Performance Data**
+```javascript
+// Access performance metrics
+this.socketNotificationReceived = function(notification, payload) {
+  if (notification === "SMARTTHINGS_PERFORMANCE") {
+    // payload.renderTime, payload.apiDuration, etc.
+  }
+}
+```
+
+### Debug Integration
+
+Other modules can integrate with the debug system:
+
+```javascript
+// Check if SmartThings debug mode is active
+if (window.MMM_SmartThings_Debug) {
+  // Access shared performance data
+  const perfData = window.MMM_SmartThings_Debug.getPerformance();
+}
+```
+
+### API Extensions
+
+The module provides these extension points:
+
+- **Custom Device Processing** - Hook into device data processing
+- **Notification Filtering** - Custom notification logic
+- **Performance Monitoring** - Shared performance metrics
+- **Cache Integration** - Leverage existing cache system
 
 ## Credits
 
 Developed for the MagicMirror² platform. Uses the Samsung SmartThings API, Chart.js for visualizations, and Font Awesome for icons.
 
 ## Changelog
+
+### Version 1.1.0 (Current)
+- ✨ Completely redesigned user interface with modern card-based design
+- 📊 Interactive power consumption charts with Chart.js integration
+- 🔔 Intelligent notifications system with smart appliance detection
+- 🎨 Multiple themes (Default, Dark, Colorful) and layout options (Vertical, Horizontal, Grid)
+- 📱 Responsive design optimized for all screen sizes including Raspberry Pi
+- 🛠️ Enhanced error handling with exponential backoff and graceful degradation
+- ⚡ Performance optimizations including intelligent caching and memory management
+- 🎯 Advanced device recognition and categorization with SVG icon system
+- 🔧 Comprehensive configuration options with 25+ customizable parameters
+- 📈 Historical data visualization with configurable time ranges
+- 🚨 Real-time alerts and proactive monitoring
+- 🐛 **Debug mode** with detailed logging and browser console tools
+- 📊 **Performance monitoring** with render time tracking and API call analysis
+- 💾 **Intelligent caching** system with 30-second TTL and smart invalidation
+- 🔄 **Automatic retry logic** with exponential backoff for reliable operation
+- 🧹 **Memory management** with automatic cleanup and garbage collection
+- ⌨️ **Keyboard shortcuts** for debug operations (Ctrl+Shift+D/C/P)
+- 📈 **Real-time performance stats** display option
+- 🎛️ **Debug console tools** for advanced troubleshooting
+- 🔍 **API call monitoring** with success/failure rate tracking
 
 ### Version 1.0.0
 - Initial release with basic SmartThings integration
