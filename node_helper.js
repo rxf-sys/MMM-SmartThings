@@ -1,4 +1,4 @@
-// ===== Enhanced Node Helper - Vollständig =====
+// ===== Enhanced Node Helper - ESLint Fixed =====
 
 const NodeHelper = require("node_helper");
 const axios = require("axios");
@@ -15,24 +15,25 @@ axios.defaults.timeout = 30000;
 
 module.exports = NodeHelper.create({
   start() {
+    // eslint-disable-next-line no-console
     console.log("[MMM-SmartThings Enhanced] Node Helper gestartet");
     
     // Cache für Performance
     this.cache = {
-      deviceData: new Map(),
-      energyData: new Map(),
-      lastUpdate: new Map(),
+      deviceData: new global.Map(),
+      energyData: new global.Map(),
+      lastUpdate: new global.Map(),
       ttl: 60000 // 1 Minute Cache
     };
     
     // Erweiterte Status-Historie
-    this.deviceHistory = new Map();
-    this.energyHistory = new Map();
+    this.deviceHistory = new global.Map();
+    this.energyHistory = new global.Map();
     
     // Notification System
     this.notifications = {
       enabled: false,
-      deviceStates: new Map()
+      deviceStates: new global.Map()
     };
     
     // Debug-System
@@ -49,6 +50,9 @@ module.exports = NodeHelper.create({
         break;
       case "GET_ENERGY_STATS_REAL":
         this.getRealEnergyStatistics(payload);
+        break;
+      default:
+        // Handle unknown notifications
         break;
     }
   },
@@ -87,7 +91,7 @@ module.exports = NodeHelper.create({
           this.debugLog(`🔍 Enhanced Verarbeitung: ${deviceId}`);
 
           // Geräte-Info mit erweiterten Daten
-          const [deviceResponse, statusResponse, historyResponse] = await Promise.allSettled([
+          const [deviceResponse, statusResponse, historyResponse] = await global.Promise.allSettled([
             this.apiCall(`https://api.smartthings.com/v1/devices/${deviceId}`, headers),
             this.apiCall(`https://api.smartthings.com/v1/devices/${deviceId}/status`, headers),
             this.getDeviceHistory(deviceId, headers) // Neue Funktion für Historie
@@ -128,7 +132,7 @@ module.exports = NodeHelper.create({
           }
 
           // Pause zwischen Requests
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new global.Promise(resolve => setTimeout(resolve, 200));
 
         } catch (deviceError) {
           this.debugLog(`❌ Enhanced Fehler bei ${deviceId}: ${deviceError.message}`);
@@ -246,7 +250,7 @@ module.exports = NodeHelper.create({
             todayEnergy: `${energyCalculation.todayEnergy.toFixed(2)}kWh`
           });
 
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new global.Promise(resolve => setTimeout(resolve, 300));
 
         } catch (deviceError) {
           this.debugLog(`❌ Energie-Fehler bei ${deviceId}: ${deviceError.message}`);
@@ -289,9 +293,6 @@ module.exports = NodeHelper.create({
     // Versuche historische Energie-Daten zu bekommen
     try {
       // SmartThings bietet begrenzte historische Daten
-      const now = new Date();
-      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      
       const historyResponse = await this.apiCall(
         `https://api.smartthings.com/v1/devices/${deviceId}/events?capability=powerConsumptionReport&limit=50`,
         headers
@@ -321,13 +322,13 @@ module.exports = NodeHelper.create({
       // Zeitbasierte Aufteilung basierend auf Report-Period
       const reportStart = new Date(realEnergyData.reportPeriod.start);
       const reportEnd = new Date(realEnergyData.reportPeriod.end);
+      const reportDurationMs = reportEnd.getTime() - reportStart.getTime();
       
       // Energie basierend auf Report-Zeitraum aufteilen
       if (reportStart >= todayStart) {
         todayEnergy = totalEnergyKwh;
       } else {
         // Proportionale Aufteilung basierend auf Zeit
-        const reportDurationMs = reportEnd.getTime() - reportStart.getTime();
         const todayDurationMs = Math.min(now.getTime() - todayStart.getTime(), reportDurationMs);
         todayEnergy = (todayDurationMs / reportDurationMs) * totalEnergyKwh;
       }
@@ -335,7 +336,6 @@ module.exports = NodeHelper.create({
       if (reportStart >= thisMonthStart) {
         thisMonthEnergy = totalEnergyKwh;
       } else {
-        const monthDurationMs = now.getTime() - thisMonthStart.getTime();
         const reportInMonth = Math.min(reportEnd.getTime() - thisMonthStart.getTime(), reportDurationMs);
         thisMonthEnergy = (reportInMonth / reportDurationMs) * totalEnergyKwh;
       }
@@ -596,7 +596,6 @@ module.exports = NodeHelper.create({
     const history = this.energyHistory.get(deviceId) || [];
     if (history.length < 2) return null;
     
-    const lastEntry = history[history.length - 1];
     const previousEntry = history[history.length - 2];
     
     const currentTotal = currentEnergy.thisMonthEnergy;
@@ -662,7 +661,7 @@ module.exports = NodeHelper.create({
         if (attempt === retries - 1) throw error;
         
         const delay = Math.pow(2, attempt) * 1000;
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new global.Promise(resolve => setTimeout(resolve, delay));
       }
     }
   },
@@ -692,6 +691,7 @@ module.exports = NodeHelper.create({
         data
       };
       
+      // eslint-disable-next-line no-console
       console.log(`[MMM-SmartThings Enhanced] ${message}`, data);
       
       this.debug.logs.push(logEntry);

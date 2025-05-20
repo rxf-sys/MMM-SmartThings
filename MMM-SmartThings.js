@@ -1,4 +1,4 @@
-// ===== MMM-SmartThings Enhanced - Teil 1: Basis & Erweiterte Status =====
+// ===== MMM-SmartThings Enhanced - ESLint Fixed =====
 
 Module.register("MMM-SmartThings", {
   defaults: {
@@ -127,6 +127,10 @@ Module.register("MMM-SmartThings", {
         this.updateDom(300);
         Log.error(`[${this.name}] ${payload.message}`);
         break;
+
+      default:
+        // Handle unknown notifications
+        break;
     }
   },
 
@@ -196,6 +200,11 @@ Module.register("MMM-SmartThings", {
     }
   },
 
+  handleDeviceNotification(payload) {
+    // Handle incoming device notifications
+    this.addNotification(payload);
+  },
+
   addNotification(notification) {
     this.notifications.pending.push(notification);
     this.notifications.history.push(notification);
@@ -236,13 +245,18 @@ Module.register("MMM-SmartThings", {
       const switchState = main.switch?.switch?.value;
       
       switch (machineState) {
-        case 'run': return 'running';
-        case 'rinse': return 'running';
-        case 'spin': return 'running';
-        case 'pause': return 'paused';
-        case 'stop': return switchState === 'on' ? 'standby' : 'off';
-        case 'end': return 'finished';
-        default: return switchState === 'on' ? 'standby' : 'off';
+        case 'run': 
+        case 'rinse': 
+        case 'spin': 
+          return 'running';
+        case 'pause': 
+          return 'paused';
+        case 'stop': 
+          return switchState === 'on' ? 'standby' : 'off';
+        case 'end': 
+          return 'finished';
+        default: 
+          return switchState === 'on' ? 'standby' : 'off';
       }
     }
 
@@ -253,13 +267,19 @@ Module.register("MMM-SmartThings", {
       const switchState = main.switch?.switch?.value;
       
       switch (machineState) {
-        case 'run': return 'running';
-        case 'drying': return 'running';
-        case 'cooldown': return 'finishing';
-        case 'pause': return 'paused';
-        case 'stop': return switchState === 'on' ? 'standby' : 'off';
-        case 'end': return 'finished';
-        default: return switchState === 'on' ? 'standby' : 'off';
+        case 'run': 
+        case 'drying': 
+          return 'running';
+        case 'cooldown': 
+          return 'finishing';
+        case 'pause': 
+          return 'paused';
+        case 'stop': 
+          return switchState === 'on' ? 'standby' : 'off';
+        case 'end': 
+          return 'finished';
+        default: 
+          return switchState === 'on' ? 'standby' : 'off';
       }
     }
 
@@ -270,10 +290,14 @@ Module.register("MMM-SmartThings", {
       
       if (switchState === 'on') {
         switch (playbackState) {
-          case 'playing': return 'running';
-          case 'paused': return 'paused';
-          case 'stopped': return 'standby';
-          default: return 'on';
+          case 'playing': 
+            return 'running';
+          case 'paused': 
+            return 'paused';
+          case 'stopped': 
+            return 'standby';
+          default: 
+            return 'on';
         }
       }
       return 'off';
@@ -400,7 +424,6 @@ Module.register("MMM-SmartThings", {
     Object.entries(this.energyStats).forEach(([deviceId, stats]) => {
       const device = this.devices.find(d => d.deviceId === deviceId);
       const deviceName = device?.name || `Gerät ${deviceId.substring(0, 8)}...`;
-      const deviceType = this.getDeviceType(device);
 
       const energyDiv = document.createElement("div");
       energyDiv.className = "energy-device";
@@ -485,7 +508,6 @@ Module.register("MMM-SmartThings", {
 
   createEnhancedDeviceElement(device) {
     const deviceDiv = document.createElement("div");
-    const deviceType = this.getDeviceType(device);
     const status = this.getEnhancedDeviceStatus(device);
     const typeClass = this.getDeviceTypeClass(device);
     
@@ -493,6 +515,7 @@ Module.register("MMM-SmartThings", {
     
     // Samsung-spezifische Daten-Attribute für CSS-Animationen
     if (this.config.samsungEnhanced) {
+      const deviceType = this.getDeviceType(device);
       deviceDiv.setAttribute('data-device-type', deviceType);
       deviceDiv.setAttribute('data-status', status);
     }
@@ -538,6 +561,77 @@ Module.register("MMM-SmartThings", {
     return deviceDiv;
   },
 
+  createEnhancedDeviceDetails(device) {
+    const main = device.components?.main || {};
+    const details = document.createElement("div");
+    details.className = "device-details";
+
+    let hasDetails = false;
+
+    // Aktuelle Leistung
+    if (main.powerMeter?.power || main.powerConsumptionReport?.powerConsumption) {
+      const power = main.powerMeter?.power?.value || 
+                   main.powerConsumptionReport?.powerConsumption?.value?.power || 0;
+      const powerClass = this.getPowerClass(power);
+      
+      const powerDiv = document.createElement("div");
+      powerDiv.className = "detail-item";
+      powerDiv.innerHTML = `
+        <span class="detail-label">Leistung:</span>
+        <span class="detail-value power ${powerClass}">${power} W</span>
+      `;
+      details.appendChild(powerDiv);
+      hasDetails = true;
+    }
+
+    // Samsung-spezifische Details
+    if (this.config.samsungEnhanced) {
+      const deviceType = this.getDeviceType(device);
+      
+      if (deviceType === 'samsung_washing_machine' || deviceType === 'samsung_dryer') {
+        // Verbleibende Zeit
+        const operatingState = deviceType === 'samsung_washing_machine' ? 
+          main.washerOperatingState : main.dryerOperatingState;
+        
+        if (operatingState?.completionTime?.value) {
+          const timeDiv = document.createElement("div");
+          timeDiv.className = "detail-item";
+          timeDiv.innerHTML = `
+            <span class="detail-label">Verbleibend:</span>
+            <span class="detail-value">${this.formatDuration(operatingState.completionTime.value)}</span>
+          `;
+          details.appendChild(timeDiv);
+          hasDetails = true;
+        }
+      }
+    }
+
+    // Standard-Details
+    if (main.temperatureMeasurement?.temperature) {
+      const tempDiv = document.createElement("div");
+      tempDiv.className = "detail-item";
+      tempDiv.innerHTML = `
+        <span class="detail-label">Temperatur:</span>
+        <span class="detail-value">${main.temperatureMeasurement.temperature.value}°C</span>
+      `;
+      details.appendChild(tempDiv);
+      hasDetails = true;
+    }
+
+    if (main.battery?.battery) {
+      const batteryDiv = document.createElement("div");
+      batteryDiv.className = "detail-item";
+      batteryDiv.innerHTML = `
+        <span class="detail-label">Batterie:</span>
+        <span class="detail-value">${main.battery.battery.value}%</span>
+      `;
+      details.appendChild(batteryDiv);
+      hasDetails = true;
+    }
+
+    return hasDetails ? details : null;
+  },
+
   // Hilfsfunktionen
   getPowerClass(power) {
     if (power === 0) return 'zero';
@@ -547,7 +641,7 @@ Module.register("MMM-SmartThings", {
   },
 
   hasNotificationPending(deviceId) {
-    return this.notifications.pending.some(n => n.device === deviceId);
+    return this.notifications.pending.some(n => n.deviceId === deviceId);
   },
 
   getDeviceTypeClass(device) {
@@ -565,6 +659,72 @@ Module.register("MMM-SmartThings", {
     };
 
     return typeMap[deviceType] || 'generic-device';
+  },
+
+  getDeviceIcon(device) {
+    const deviceType = this.getDeviceType(device);
+    const main = device.components?.main || {};
+    const name = device.name?.toLowerCase() || '';
+
+    // Samsung-spezifische Icons
+    if (deviceType === 'samsung_washing_machine') return "fas fa-tshirt";
+    if (deviceType === 'samsung_dryer') return "fas fa-wind";
+    if (deviceType === 'samsung_tv') return "fas fa-tv";
+
+    // Name-basierte Icons
+    if (name.includes("licht") || name.includes("light")) return "fas fa-lightbulb";
+    if (name.includes("tür") || name.includes("door")) return "fas fa-door-open";
+    if (name.includes("fenster") || name.includes("window")) return "fas fa-window-maximize";
+
+    // Capability-basierte Icons
+    if (main.switch) return "fas fa-power-off";
+    if (main.powerMeter) return "fas fa-bolt";
+    if (main.temperatureMeasurement) return "fas fa-thermometer-half";
+    if (main.contactSensor) return "fas fa-door-closed";
+    if (main.motionSensor) return "fas fa-running";
+    if (main.battery) return "fas fa-battery-half";
+
+    return "fas fa-microchip";
+  },
+
+  getStatusText(status) {
+    const translations = {
+      'on': 'Ein',
+      'off': 'Aus',
+      'running': 'Läuft',
+      'paused': 'Pause',
+      'finished': 'Fertig',
+      'standby': 'Bereit',
+      'error': 'Fehler',
+      'stopped': 'Stopp',
+      'finishing': 'Fertig',
+      'open': 'Offen',
+      'closed': 'Geschlossen',
+      'active': 'Bewegung',
+      'inactive': 'Inaktiv',
+      'unknown': 'Unbekannt'
+    };
+
+    return translations[status] || status;
+  },
+
+  formatTime(date) {
+    if (typeof date === 'string') {
+      date = new Date(date);
+    }
+    return date.toLocaleTimeString('de-DE', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  },
+
+  formatDuration(minutes) {
+    if (minutes < 60) {
+      return `${minutes} Min`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
   },
 
   // Cleanup
