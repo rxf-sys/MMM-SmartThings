@@ -23,7 +23,7 @@ module.exports = NodeHelper.create({
     this.cache = {
       deviceData: new Map(),
       lastUpdate: new Map(),
-      ttl: 120000 // 2 Minuten Cache TTL (erhöht von 30s)
+      ttl: 120000 // 2 Minuten Cache TTL
     };
 
     // Debug-System
@@ -274,7 +274,6 @@ module.exports = NodeHelper.create({
       });
     }
   },
-
   // IMPROVED: Enhanced Power History with proper Samsung device support
   async getPowerHistory(config) {
     try {
@@ -344,10 +343,10 @@ module.exports = NodeHelper.create({
             // Samsung Washing Machine Detection and Simulation
             if (main.washerOperatingState || main['samsungce.washerOperatingState']) {
               deviceType = 'washing_machine';
-              const washerState = main.washerOperatingState?.machineState?.value ||
+              const washerState = main.washerOperatingState?.machineState?.value || 
                                 main['samsungce.washerOperatingState']?.machineState?.value || 'none';
               const switchState = main.switch?.switch?.value || 'off';
-
+              
               this.debugLog(`🧺 Washing Machine detected`, {
                 deviceId,
                 washerState,
@@ -369,10 +368,10 @@ module.exports = NodeHelper.create({
             // Samsung Dryer Detection and Simulation
             else if (main.dryerOperatingState || main['samsungce.dryerOperatingState']) {
               deviceType = 'dryer';
-              const dryerState = main.dryerOperatingState?.machineState?.value ||
+              const dryerState = main.dryerOperatingState?.machineState?.value || 
                                main['samsungce.dryerOperatingState']?.machineState?.value || 'none';
               const switchState = main.switch?.switch?.value || 'off';
-
+              
               this.debugLog(`🔥 Dryer detected`, {
                 deviceId,
                 dryerState,
@@ -395,7 +394,7 @@ module.exports = NodeHelper.create({
             else if (main.tvChannel || main.audioVolume || main['samsungvd.mediaInputSource']) {
               deviceType = 'tv';
               const switchState = main.switch?.switch?.value || 'off';
-
+              
               this.debugLog(`📺 Samsung TV detected`, {
                 deviceId,
                 switchState,
@@ -416,7 +415,7 @@ module.exports = NodeHelper.create({
             else if (main.switch) {
               deviceType = 'generic_switch';
               const switchState = main.switch.switch.value || 'off';
-
+              
               this.debugLog(`🔌 Generic switch device detected`, {
                 deviceId,
                 switchState,
@@ -458,16 +457,16 @@ module.exports = NodeHelper.create({
                 case 'washing_machine':
                   // Simulate washing cycles: 2-3 cycles per day, each 1.5-2 hours
                   const timeOfDay = time.getHours();
-                  const isWashingTime = (timeOfDay >= 7 && timeOfDay <= 10) ||
+                  const isWashingTime = (timeOfDay >= 7 && timeOfDay <= 10) || 
                                        (timeOfDay >= 18 && timeOfDay <= 20);
                   const cyclePattern = Math.sin((i / dataPoints) * Math.PI * 2);
-
+                  
                   if (isWashingTime && Math.random() > 0.6) {
                     // Running cycle: varying between wash/rinse/spin
                     if (cyclePattern > 0.5) {
                       simulatedPower = 1200 + (Math.random() * 300); // Wash cycle
                     } else if (cyclePattern > 0) {
-                      simulatedPower = 800 + (Math.random() * 200); // Rinse cycle
+                      simulatedPower = 800 + (Math.random() * 200); // Rinse cycle  
                     } else {
                       simulatedPower = 1500 + (Math.random() * 400); // Spin cycle
                     }
@@ -479,9 +478,9 @@ module.exports = NodeHelper.create({
                 case 'dryer':
                   // Simulate drying cycles: 1-2 cycles per day, each 2-3 hours
                   const timeOfDay2 = time.getHours();
-                  const isDryingTime = (timeOfDay2 >= 8 && timeOfDay2 <= 11) ||
+                  const isDryingTime = (timeOfDay2 >= 8 && timeOfDay2 <= 11) || 
                                       (timeOfDay2 >= 19 && timeOfDay2 <= 22);
-
+                  
                   if (isDryingTime && Math.random() > 0.7) {
                     // Drying cycle: high heat periods and cooldown
                     const heatCycle = Math.sin((i / dataPoints) * Math.PI * 4);
@@ -580,7 +579,7 @@ module.exports = NodeHelper.create({
     } catch (error) {
       this.debugLog("💥 Critical error in enhanced power history:", error);
       console.error("[MMM-SmartThings] Enhanced power history error:", error.message);
-
+      
       // Send empty history to prevent module from hanging
       this.sendSocketNotification("POWER_HISTORY", {});
     }
@@ -661,7 +660,6 @@ module.exports = NodeHelper.create({
       });
     }
   },
-
   // Hilfsfunktion für API-Aufrufe mit Retry-Logik und Rate Limiting
   async apiCallWithRetry(url, headers, operationId = '', retries = 3) {
     const startTime = Date.now();
