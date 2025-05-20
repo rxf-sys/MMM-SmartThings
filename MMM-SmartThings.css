@@ -1,492 +1,420 @@
-/* ===== MMM-SmartThings Minimalistisches Design - Teil 1 ===== */
+/* ===== MMM-SmartThings - An MagicMirror Design angepasst ===== */
 
 .mmm-smartthings {
-  font-family: 'Roboto', 'Segoe UI', sans-serif;
-  color: #ffffff;
+  font-family: var(--font-secondary, 'Roboto'), 'Segoe UI', sans-serif;
+  color: var(--color-text-bright, #fff);
   text-align: left;
-  max-width: 400px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 16px;
-  padding: 20px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 650px; /* Konsistent mit anderen Modulen */
+  min-width: 10vw;
+  width: 100%;
+  margin-bottom: 25px; /* Konsistent mit MagicMirror Module-Spacing */
+  font-size: var(--font-size, 20px);
 }
 
-/* ===== Header Design ===== */
+/* ===== Header - MagicMirror Style ===== */
+.mmm-smartthings .module-header,
 .mmm-smartthings .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 15px;
+  text-transform: none; /* Konsistent mit MagicMirror */
+  font-size: var(--font-size-small, 0.75rem);
 }
 
 .mmm-smartthings .title-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .mmm-smartthings .title-section i {
-  font-size: 24px;
-  color: #4fc3f7;
-  filter: drop-shadow(0 0 8px rgba(79, 195, 247, 0.5));
+  font-size: 1.2rem;
+  color: #1ED760; /* Konsistent mit Spotify-Grün */
+  margin-right: 0.5em;
 }
 
 .mmm-smartthings .title {
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  background: linear-gradient(135deg, #4fc3f7, #29b6f6);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: var(--font-size-small, 0.75rem);
+  font-weight: normal;
+  color: var(--color-text-bright, #fff);
+  white-space: nowrap;
+  text-transform: none;
 }
 
 .mmm-smartthings .last-update {
-  font-size: 11px;
-  opacity: 0.7;
-  font-weight: 300;
+  font-size: 12px; /* Konsistent mit alert .small */
+  color: var(--color-text-dimmed, #666);
+  font-weight: normal;
+  text-align: right;
+  flex-shrink: 0;
 }
 
-/* ===== Loading & Error States ===== */
+/* ===== Loading & Error States - MagicMirror Style ===== */
 .mmm-smartthings .loading,
 .mmm-smartthings .error {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 20px;
-  gap: 12px;
-  font-size: 14px;
-  border-radius: 12px;
+  padding: 15px 10px;
+  gap: 8px;
+  font-size: 17px; /* Konsistent mit alert .medium */
+  border-radius: 4px; /* Subtile Rundung wie bei anderen Modulen */
 }
 
 .mmm-smartthings .loading {
-  background: rgba(79, 195, 247, 0.1);
-  border: 1px solid rgba(79, 195, 247, 0.3);
+  color: var(--color-text, #999);
 }
 
 .mmm-smartthings .loading i {
-  color: #4fc3f7;
-  font-size: 16px;
+  color: #1ED760;
+  font-size: 1.2rem;
 }
 
 .mmm-smartthings .error {
-  background: rgba(244, 67, 54, 0.1);
-  border: 1px solid rgba(244, 67, 54, 0.3);
-  color: #ff6b6b;
+  color: #FFBD44; /* Konsistent mit NINA Warning-Farbe */
 }
 
-/* ===== MMM-SmartThings - Teil 2: Energie-Statistiken ===== */
-
-/* ===== Energie-Statistiken ===== */
+/* ===== Energie-Statistiken - MagicMirror Style ===== */
 .mmm-smartthings .energy-stats {
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(139, 195, 74, 0.1));
-  border: 1px solid rgba(76, 175, 80, 0.3);
-  border-radius: 12px;
-  padding: 16px;
+  background: transparent; /* Kein Hintergrund wie bei anderen Modulen */
+  border: none;
+  border-radius: 0;
+  padding: 0;
   margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mmm-smartthings .energy-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #81c784;
+  margin-bottom: 10px;
+  font-size: var(--font-size-small, 0.75rem);
+  color: var(--color-text-bright, #fff);
+  text-transform: none;
 }
 
 .mmm-smartthings .energy-header i {
-  color: #4caf50;
-  filter: drop-shadow(0 0 4px rgba(76, 175, 80, 0.5));
+  color: #1ED760;
+  font-size: 1.2rem;
+  margin-right: 9px; /* Konsistent mit NINA icon spacing */
 }
 
 .mmm-smartthings .energy-device {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
-  border-left: 3px solid #4caf50;
+  background: transparent;
+  border-radius: 0;
+  padding: 7px 0; /* Konsistent mit NewsAPI content padding */
+  margin-bottom: 10px;
+  border-left: none;
+  border-bottom: 1px solid var(--color-text-dimmed, #666);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mmm-smartthings .energy-device:last-child {
   margin-bottom: 0;
+  border-bottom: none;
 }
 
 .mmm-smartthings .energy-device-name {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: 500;
+  font-weight: normal;
   margin-bottom: 8px;
-  color: #ffffff;
+  color: var(--color-text-bright, #fff);
+  font-size: 18px; /* Konsistent mit MMM-Fuel .small */
 }
 
+.mmm-smartthings .energy-device-name i {
+  color: #1ED760;
+  width: 20px;
+  text-align: center;
+}
+
+/* ===== Energie-Grid - MagicMirror Style ===== */
 .mmm-smartthings .energy-values {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  width: 100%;
+  justify-content: space-between;
 }
 
 .mmm-smartthings .energy-stat {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  flex: 1;
 }
 
 .mmm-smartthings .energy-stat .label {
-  font-size: 10px;
-  opacity: 0.7;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 12px; /* Konsistent mit alert .small */
+  color: var(--color-text-dimmed, #666);
+  text-transform: capitalize; /* Konsistent mit MMM-Todoist */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mmm-smartthings .energy-stat .value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #ffffff;
+  font-size: 15px; /* Konsistent mit MMM-SystemInfo */
+  font-weight: normal;
+  color: var(--color-text-bright, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mmm-smartthings .energy-stat .value.power {
-  color: #ff9800;
+  color: #1ED760; /* Konsistent mit Spotify-Grün */
+  font-weight: normal;
 }
 
-/* ===== MMM-SmartThings - Teil 3: Device Cards & Container ===== */
-
-/* ===== Geräte Container ===== */
+/* ===== Geräte Container - MagicMirror Style ===== */
 .mmm-smartthings .devices-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  width: 100%;
 }
 
 .mmm-smartthings.horizontal .devices-container {
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 15px;
 }
 
-/* ===== Device Cards ===== */
+/* ===== Device Cards - MagicMirror Style ===== */
 .mmm-smartthings .device {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 16px;
-  border-left: 4px solid #2196f3;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent; /* Kein Hintergrund */
+  border-radius: 0;
+  padding: 7px 0; /* Konsistent mit anderen Modulen */
+  border-left: none;
+  border-bottom: 1px solid var(--color-text-dimmed, #666);
+  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: auto;
 }
 
-.mmm-smartthings .device::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
+.mmm-smartthings .device:last-child {
+  border-bottom: none;
 }
 
 .mmm-smartthings .device:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  transform: none; /* Dezente Hover-Effekte */
 }
 
-.mmm-smartthings .device:hover::before {
-  opacity: 1;
-}
-
-/* ===== Device Types ===== */
-.mmm-smartthings .device.appliance-device {
-  border-left-color: #e91e63;
-  background: linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(233, 30, 99, 0.05));
-}
-
-.mmm-smartthings .device.switch-device {
-  border-left-color: #2196f3;
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.1), rgba(33, 150, 243, 0.05));
-}
-
-.mmm-smartthings .device.power-device {
-  border-left-color: #ff9800;
-  background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 152, 0, 0.05));
-}
-
-.mmm-smartthings .device.sensor-device {
-  border-left-color: #4caf50;
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
-}
-
-.mmm-smartthings .device.contact-device {
-  border-left-color: #9c27b0;
-  background: linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(156, 39, 176, 0.05));
-}
-
-.mmm-smartthings .device.motion-device {
-  border-left-color: #f44336;
-  background: linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(244, 67, 54, 0.05));
-}
-
-/* ===== MMM-SmartThings - Teil 4: Device Header & Status ===== */
-
-/* ===== Device Header ===== */
+/* ===== Device Header - MagicMirror Style ===== */
 .mmm-smartthings .device-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 5px;
+  width: 100%;
+  min-height: auto;
 }
 
 .mmm-smartthings .device-icon {
-  font-size: 18px;
-  opacity: 0.9;
+  font-size: 1.2rem;
+  color: #1ED760;
   min-width: 20px;
   text-align: center;
+  flex-shrink: 0;
+  margin-right: 8px; /* Konsistent mit SystemInfo icon spacing */
 }
 
 .mmm-smartthings .device-name {
-  font-weight: 500;
-  font-size: 15px;
+  font-weight: normal;
+  font-size: 18px; /* Konsistent mit anderen Modulen */
   flex-grow: 1;
-  color: #ffffff;
+  color: var(--color-text-bright, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .mmm-smartthings .device-status {
-  font-size: 11px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 12px; /* Konsistent mit alert .small */
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: normal;
+  text-transform: capitalize; /* Konsistent mit Todoist */
   border: 1px solid transparent;
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-width: fit-content;
 }
 
-/* ===== Status Colors ===== */
-.mmm-smartthings .device-status.on {
-  background: rgba(76, 175, 80, 0.2);
-  border-color: rgba(76, 175, 80, 0.4);
-  color: #81c784;
-}
-
-.mmm-smartthings .device-status.off {
-  background: rgba(158, 158, 158, 0.2);
-  border-color: rgba(158, 158, 158, 0.4);
-  color: #bcbcbc;
-}
-
+/* ===== Status Colors - MagicMirror Theme ===== */
+.mmm-smartthings .device-status.on,
 .mmm-smartthings .device-status.running {
-  background: rgba(255, 193, 7, 0.2);
-  border-color: rgba(255, 193, 7, 0.4);
-  color: #ffcc02;
-  animation: pulse 2s infinite;
+  background: transparent;
+  border-color: #008000; /* Konsistent mit SystemInfo status-ok */
+  color: #008000;
 }
 
+.mmm-smartthings .device-status.off,
 .mmm-smartthings .device-status.stopped {
-  background: rgba(96, 125, 139, 0.2);
-  border-color: rgba(96, 125, 139, 0.4);
-  color: #90a4ae;
+  background: transparent;
+  border-color: var(--color-text-dimmed, #666);
+  color: var(--color-text-dimmed, #666);
 }
 
+.mmm-smartthings .device-status.paused,
 .mmm-smartthings .device-status.open {
-  background: rgba(255, 152, 0, 0.2);
-  border-color: rgba(255, 152, 0, 0.4);
-  color: #ffb74d;
+  background: transparent;
+  border-color: #FFBD44; /* Konsistent mit NINA Warning */
+  color: #FFBD44;
 }
 
+.mmm-smartthings .device-status.finished,
 .mmm-smartthings .device-status.closed {
-  background: rgba(76, 175, 80, 0.2);
-  border-color: rgba(76, 175, 80, 0.4);
-  color: #81c784;
+  background: transparent;
+  border-color: #008000;
+  color: #008000;
+}
+
+.mmm-smartthings .device-status.error {
+  background: transparent;
+  border-color: #ff0000; /* Konsistent mit SystemInfo status-critical */
+  color: #ff0000;
 }
 
 .mmm-smartthings .device-status.active {
-  background: rgba(244, 67, 54, 0.2);
-  border-color: rgba(244, 67, 54, 0.4);
-  color: #ef5350;
-  animation: pulse 2s infinite;
+  background: transparent;
+  border-color: #1ED760;
+  color: #1ED760;
 }
 
-.mmm-smartthings .device-status.inactive {
-  background: rgba(96, 125, 139, 0.2);
-  border-color: rgba(96, 125, 139, 0.4);
-  color: #90a4ae;
-}
-
+.mmm-smartthings .device-status.standby,
+.mmm-smartthings .device-status.inactive,
 .mmm-smartthings .device-status.unknown {
-  background: rgba(121, 85, 72, 0.2);
-  border-color: rgba(121, 85, 72, 0.4);
-  color: #a1887f;
+  background: transparent;
+  border-color: var(--color-text, #999);
+  color: var(--color-text, #999);
 }
 
-/* ===== MMM-SmartThings - Teil 5: Device Details & Themes ===== */
-
-/* ===== Device Details ===== */
+/* ===== Device Details - MagicMirror Style ===== */
 .mmm-smartthings .device-details {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 8px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 5px;
+  padding-top: 5px;
+  width: 100%;
 }
 
 .mmm-smartthings .detail-item {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
 }
 
 .mmm-smartthings .detail-label {
-  font-size: 10px;
-  opacity: 0.7;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 12px;
+  color: var(--color-text-dimmed, #666);
+  text-transform: capitalize;
+  white-space: nowrap;
+  width: 70px; /* Konsistent mit SystemInfo label width */
 }
 
 .mmm-smartthings .detail-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: #ffffff;
+  font-size: 15px; /* Konsistent mit SystemInfo */
+  font-weight: normal;
+  color: var(--color-text-bright, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ===== Themes ===== */
-
-/* Dark Theme */
-.mmm-smartthings.dark {
-  background: rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.mmm-smartthings.dark .device {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.mmm-smartthings.dark .energy-stats {
-  background: rgba(76, 175, 80, 0.08);
-  border: 1px solid rgba(76, 175, 80, 0.2);
-}
-
-/* Modern Theme */
-.mmm-smartthings.modern {
-  background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(50, 50, 50, 0.9));
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-}
-
-.mmm-smartthings.modern .device {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.mmm-smartthings.modern .title {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* ===== MMM-SmartThings - Teil 6: Compact Mode & Layouts ===== */
-
-/* ===== Compact Mode ===== */
+/* ===== Compact Mode - MagicMirror Style ===== */
 .mmm-smartthings.compact {
-  padding: 16px;
+  padding: 0;
+  max-width: 400px; /* Reduziert für kompakte Ansicht */
 }
 
 .mmm-smartthings.compact .device {
-  padding: 12px;
+  padding: 5px 0;
 }
 
 .mmm-smartthings.compact .device-header {
   margin-bottom: 0;
 }
 
-.mmm-smartthings.compact .device-details {
-  display: none;
-}
-
 .mmm-smartthings.compact .device-name {
-  font-size: 14px;
+  font-size: 15px; /* Reduziert */
 }
 
 .mmm-smartthings.compact .device-status {
   font-size: 10px;
-  padding: 2px 8px;
+  padding: 1px 4px;
 }
 
-/* ===== Horizontal Layout ===== */
+.mmm-smartthings.compact .device-details {
+  display: none; /* Versteckt in kompaktem Modus */
+}
+
+.mmm-smartthings.compact .energy-device {
+  padding: 5px 0;
+  margin-bottom: 8px;
+}
+
+.mmm-smartthings.compact .energy-values {
+  gap: 10px;
+}
+
+/* ===== Horizontal Layout - MagicMirror Style ===== */
 .mmm-smartthings.horizontal .device {
-  min-width: 180px;
-  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+  flex: 1 1 200px;
+  border-bottom: 1px solid var(--color-text-dimmed, #666);
+  border-right: 1px solid var(--color-text-dimmed, #666);
+  padding: 10px;
+  margin-bottom: 0;
+}
+
+.mmm-smartthings.horizontal .device:last-child {
+  border-right: none;
 }
 
 .mmm-smartthings.horizontal .device-details {
-  grid-template-columns: 1fr;
-  gap: 4px;
+  flex-direction: column;
+  gap: 5px;
 }
 
-/* ===== Animations ===== */
+/* ===== Animationen - Dezent für MagicMirror ===== */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  50% { opacity: 0.7; }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.mmm-smartthings .device-status.running {
+  animation: pulse 3s infinite; /* Langsamer für weniger Ablenkung */
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.mmm-smartthings .device-status.active {
+  animation: pulse 2s infinite;
 }
-
-.mmm-smartthings .loading i {
-  animation: spin 1s linear infinite;
-}
-
-.mmm-smartthings .device {
-  animation: fadeIn 0.5s ease-out;
-}
-
-.mmm-smartthings .energy-device {
-  animation: fadeIn 0.6s ease-out;
-}
-
-/* ===== Special Effects ===== */
-.mmm-smartthings .device-icon {
-  transition: all 0.3s ease;
-}
-
-.mmm-smartthings .device:hover .device-icon {
-  transform: scale(1.1);
-  filter: drop-shadow(0 0 8px currentColor);
-}
-
-.mmm-smartthings .title-section i {
-  transition: all 0.3s ease;
-}
-
-.mmm-smartthings .header:hover .title-section i {
-  transform: rotate(10deg) scale(1.1);
-}
-
-/* ===== MMM-SmartThings - Teil 7: Responsive & Accessibility ===== */
 
 /* ===== Responsive Design ===== */
 @media (max-width: 600px) {
   .mmm-smartthings {
     max-width: 100%;
     margin: 0 10px;
+    font-size: 16px;
   }
   
   .mmm-smartthings.horizontal .devices-container {
@@ -494,73 +422,93 @@
   }
   
   .mmm-smartthings .energy-values {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    gap: 8px;
   }
   
   .mmm-smartthings .device-details {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ===== Scrollbar Styling ===== */
-.mmm-smartthings .devices-container::-webkit-scrollbar {
-  width: 4px;
-}
-
-.mmm-smartthings .devices-container::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-}
-
-.mmm-smartthings .devices-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-  transition: background 0.3s ease;
-}
-
-.mmm-smartthings .devices-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-/* ===== Focus States ===== */
-.mmm-smartthings .device:focus,
-.mmm-smartthings .energy-device:focus {
-  outline: 2px solid rgba(79, 195, 247, 0.5);
-  outline-offset: 2px;
-}
-
-/* ===== High Contrast Mode ===== */
-@media (prefers-contrast: high) {
-  .mmm-smartthings {
-    background: rgba(0, 0, 0, 0.9);
-    border: 2px solid #ffffff;
+    flex-direction: column;
+    gap: 5px;
   }
   
-  .mmm-smartthings .device {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+  .mmm-smartthings .title {
+    font-size: 0.7rem;
+  }
+
+  .mmm-smartthings .device-name {
+    font-size: 15px;
   }
 }
 
-/* ===== Reduced Motion ===== */
+/* ===== Region-spezifische Anpassungen ===== */
+.region.top.left .mmm-smartthings {
+  width: 100%;
+  max-width: 650px;
+  min-width: 10vw;
+}
+
+.region.top.right .mmm-smartthings {
+  width: 100%;
+  margin-top: 10px; /* Konsistent mit SystemInfo */
+}
+
+/* ===== Power-Level Classes für Konsistenz ===== */
+.mmm-smartthings .power.high {
+  color: #ff0000; /* Kritisch */
+}
+
+.mmm-smartthings .power.medium {
+  color: #FFBD44; /* Warnung */
+}
+
+.mmm-smartthings .power.low {
+  color: #008000; /* OK */
+}
+
+.mmm-smartthings .power.zero {
+  color: var(--color-text, #999);
+}
+
+/* ===== Trend-Indikatoren - MagicMirror Style ===== */
+.mmm-smartthings .trend-up::after {
+  content: '↗';
+  color: #ff0000;
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+.mmm-smartthings .trend-down::after {
+  content: '↘';
+  color: #008000;
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+.mmm-smartthings .trend-stable::after {
+  content: '→';
+  color: var(--color-text, #999);
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+/* ===== Accessibility & Print Styles ===== */
 @media (prefers-reduced-motion: reduce) {
-  .mmm-smartthings * {
+  .mmm-smartthings *,
+  .mmm-smartthings *::before,
+  .mmm-smartthings *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
 
-/* ===== Print Styles ===== */
 @media print {
   .mmm-smartthings {
     background: white;
     color: black;
-    border: 1px solid black;
   }
   
   .mmm-smartthings .device {
-    background: #f5f5f5;
-    border: 1px solid #ccc;
+    border-bottom: 1px solid #333;
   }
 }
