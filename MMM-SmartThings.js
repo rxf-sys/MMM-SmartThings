@@ -165,12 +165,41 @@ Module.register("MMM-SmartThings", {
           this.performance.lastCacheHit = payload.performance.cacheHit;
         }
 
+        this.debugLog("📱 Device data received", {
+          deviceCount: this.devices.length,
+          deviceNames: this.devices.map(d => d.name)
+        });
+
         this.updateDom(300);
         break;
 
       case "POWER_HISTORY":
+        this.debugLog("⚡ Power history received", {
+          deviceCount: Object.keys(payload).length,
+          devices: Object.keys(payload),
+          sampleData: Object.values(payload).map(d => ({
+            method: d.method,
+            deviceType: d.deviceType,
+            dataPoints: d.values ? d.values.length : 0,
+            powerRange: d.values && d.values.length > 0 ? `${Math.min(...d.values)}-${Math.max(...d.values)}W` : 'No data'
+          }))
+        });
+
         this.powerHistory = payload;
-        this.updateChart();
+
+        // Force chart update after power history is received
+        setTimeout(() => {
+          this.debugLog("🔄 Triggering chart update after power history");
+          if (Object.keys(this.powerHistory).length > 0) {
+            if (this.chart) {
+              this.updateChart();
+            } else {
+              this.initChart();
+            }
+          } else {
+            this.debugLog("⚠️ No power history data to display");
+          }
+        }, 500); // Small delay to ensure DOM is ready
         break;
 
       case "NOTIFICATION":
@@ -221,6 +250,11 @@ Module.register("MMM-SmartThings", {
     const startTime = Date.now();
     const wrapper = document.createElement("div");
     wrapper.className = `mmm-smartthings ${this.config.theme} ${this.config.layout}`;
+
+    // Debug mode indicator
+    if (this.config.debug) {
+      wrapper.classList.add('debug-mode');
+    }
 
     // Performance Stats anzeigen (wenn aktiviert)
     if (this.config.showPerformanceStats && this.performance.lastRenderTime) {
@@ -275,15 +309,28 @@ Module.register("MMM-SmartThings", {
     `;
     wrapper.appendChild(header);
 
-    // Chart (wenn aktiviert)
+    // Chart (wenn aktiviert und Daten vorhanden)
     if (this.config.showChart && this.config.powerDeviceIds.length > 0) {
       const chartContainer = document.createElement("div");
       chartContainer.className = "chart-container";
-      chartContainer.innerHTML = `
-        <h3>Stromverbrauch</h3>
-        <canvas id="smartthings-chart-${this.identifier}"></canvas>
-      `;
+
+      const chartTitle = document.createElement("h3");
+      chartTitle.textContent = "Stromverbrauch";
+      chartContainer.appendChild(chartTitle);
+
+      const canvas = document.createElement("canvas");
+      canvas.id = `smartthings-chart-${this.identifier}`;
+      canvas.width = 400;
+      canvas.height = 200;
+      chartContainer.appendChild(canvas);
+
       wrapper.appendChild(chartContainer);
+
+      this.debugLog("📊 Chart container added to DOM", {
+        canvasId: canvas.id,
+        powerDeviceIds: this.config.powerDeviceIds,
+        hasPowerHistory: !!this.powerHistory && Object.keys(this.powerHistory).length > 0
+      });
     }
 
     // Geräte-Container
@@ -297,9 +344,20 @@ Module.register("MMM-SmartThings", {
 
     wrapper.appendChild(devicesContainer);
 
-    // Chart nach DOM-Update erstellen
+    // Chart nach DOM-Update erstellen (wenn Daten vorhanden)
     if (this.config.showChart && this.config.powerDeviceIds.length > 0) {
-      setTimeout(() => this.initChart(), 100);
+      setTimeout(() => {
+        this.debugLog("⏰ Chart initialization triggered", {
+          powerHistoryAvailable: !!this.powerHistory && Object.keys(this.powerHistory).length > 0,
+          chartExists: !!this.chart
+        });
+
+        if (this.powerHistory && Object.keys(this.powerHistory).length > 0) {
+          this.initChart();
+        } else {
+          this.debugLog("⚠️ No power history data available for chart initialization");
+        }
+      }, 100);
     }
 
     // Performance-Messung
@@ -316,10 +374,14 @@ Module.register("MMM-SmartThings", {
     const header = document.createElement("div");
     header.className = "device-header";
 
+    // Icon (FontAwesome fallback wenn SVG nicht funktioniert)
     if (this.config.showIcons) {
-      const icon = document.createElement("div");
-      icon.className = `device-icon ${this.getDeviceIconClass(device)}`;
-      header.appendChild(icon);
+      const iconElement = document.createElement("i");
+      iconElement.className = `${this.getDeviceIcon(device)}`;
+      iconElement.style.marginRight = "8px";
+      iconElement.style.fontSize = "16px";
+      iconElement.style.opacity = "0.8";
+      header.appendChild(iconElement);
     }
 
     const name = document.createElement("span");
@@ -353,6 +415,12 @@ Module.register("MMM-SmartThings", {
     }
 
     return deviceDiv;
+  },
+
+    debugLog(message, data = {}) {
+    if (this.config.debug) {
+      console.log(`[${this.name} Frontend] ${message}`, data);
+    }
   },
 
   getDeviceTypeClass(device) {
@@ -498,83 +566,203 @@ Module.register("MMM-SmartThings", {
   },
 
   initChart() {
+    // Chart initialization method - fixed version
     const canvas = document.getElementById(`smartthings-chart-${this.identifier}`);
-    if (!canvas || !window.Chart) return;
+    if (!canvas) {
+      this.debugLog("❌ Chart canvas not found", {
+        expectedId: `smartthings-chart-${this.identifier}`,
+        canvasExists: !!canvas
+      });
+      return;
+    }
+
+    if (!window.Chart) {
+      this.debugLog("❌ Chart.js not loaded", {
+        windowChart: typeof window.Chart,
+        suggestion: "Check if Chart.js CDN is accessible"
+      });
+      return;
+    }
+
+    this.debugLog("🎨 Initializing chart", {
+      canvasId: canvas.id,
+      powerHistoryKeys: Object.keys(this.powerHistory || {}),
+      chartJsVersion: window.Chart.version || 'unknown'
+    });
 
     const ctx = canvas.getContext('2d');
 
-    // Alte Chart-Instanz zerstören
+    // Destroy existing chart
     if (this.chart) {
       this.chart.destroy();
+      this.debugLog("🗑️ Destroyed existing chart");
     }
 
-    const datasets = Object.entries(this.powerHistory).map(([ deviceId, data], index) => {
+    // Prepare chart data
+    const datasets = Object.entries(this.powerHistory || {}).map(([deviceId, data], index) => {
       const device = this.devices.find(d => d.deviceId === deviceId);
-      const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'];
+      const deviceName = device?.name || deviceId.substring(0, 8) + '...';
+      const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40'];
 
       return {
-        label: device?.name || deviceId,
-        data: data.values,
+        label: deviceName,
+        data: data.values || [],
         borderColor: colors[index % colors.length],
         backgroundColor: colors[index % colors.length] + '20',
         fill: false,
-        tension: 0.1
+        tension: 0.1,
+        pointRadius: 2,
+        pointHoverRadius: 4
       };
     });
 
-    this.chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: this.powerHistory[Object.keys(this.powerHistory)[0]]?.timestamps || [],
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
+    // Use timestamps from first device
+    const timestamps = Object.keys(this.powerHistory || {}).length > 0
+      ? this.powerHistory[Object.keys(this.powerHistory)[0]]?.timestamps || []
+      : [];
+
+    this.debugLog("📊 Chart data prepared", {
+      datasets: datasets.length,
+      timestamps: timestamps.length,
+      sampleData: datasets.map(d => ({
+        label: d.label,
+        dataPoints: d.data.length,
+        maxValue: Math.max(...(d.data || [0]))
+      }))
+    });
+
+    try {
+      this.chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: timestamps,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
             title: {
               display: true,
-              text: 'Watt'
+              text: 'Stromverbrauch (24h)',
+              color: '#ffffff',
+              font: {
+                size: 14
+              }
+            },
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                color: '#ffffff',
+                fontSize: 12,
+                usePointStyle: true
+              }
             }
           },
-          x: {
-            title: {
+          scales: {
+            x: {
               display: true,
-              text: 'Zeit'
+              title: {
+                display: true,
+                text: 'Zeit',
+                color: '#ffffff'
+              },
+              ticks: {
+                color: '#ffffff',
+                maxTicksLimit: 8
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              }
+            },
+            y: {
+              display: true,
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Watt',
+                color: '#ffffff'
+              },
+              ticks: {
+                color: '#ffffff',
+                callback: function(value) {
+                  return value + 'W';
+                }
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          elements: {
+            line: {
+              borderWidth: 2
             }
           }
-        },
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top'
-          }
         }
-      }
-    });
+      });
+
+      this.debugLog("✅ Chart created successfully", {
+        chartType: this.chart.config.type,
+        datasetCount: this.chart.data.datasets.length,
+        labelCount: this.chart.data.labels.length
+      });
+
+    } catch (error) {
+      this.debugLog("❌ Chart creation failed", {
+        error: error.message,
+        stack: error.stack
+      });
+      console.error("[MMM-SmartThings] Chart creation error:", error);
+    }
   },
 
   updateChart() {
-    if (this.chart && this.powerHistory) {
+    // Chart update method - fixed version
+    if (this.chart && this.powerHistory && Object.keys(this.powerHistory).length > 0) {
+      this.debugLog("🔄 Updating existing chart with power history data", {
+        historyDevices: Object.keys(this.powerHistory),
+        dataAvailable: Object.values(this.powerHistory).map(d => d.values ? d.values.length : 0)
+      });
+
       const datasets = Object.entries(this.powerHistory).map(([deviceId, data], index) => {
         const device = this.devices.find(d => d.deviceId === deviceId);
-        const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'];
+        const deviceName = device?.name || deviceId.substring(0, 8) + '...';
+        const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40'];
 
         return {
-          label: device?.name || deviceId,
-          data: data.values,
+          label: deviceName,
+          data: data.values || [],
           borderColor: colors[index % colors.length],
           backgroundColor: colors[index % colors.length] + '20',
           fill: false,
-          tension: 0.1
+          tension: 0.1,
+          pointRadius: 2,
+          pointHoverRadius: 4
         };
       });
 
-      this.chart.data.labels = this.powerHistory[Object.keys(this.powerHistory)[0]]?.timestamps || [];
+      // Use timestamps from any device (they should all be the same)
+      const timestamps = this.powerHistory[Object.keys(this.powerHistory)[0]]?.timestamps || [];
+
+      this.chart.data.labels = timestamps;
       this.chart.data.datasets = datasets;
-      this.chart.update();
+      this.chart.update('none'); // No animation for better performance
+
+      this.debugLog("✅ Chart updated successfully", {
+        labelsCount: timestamps.length,
+        datasetsCount: datasets.length
+      });
+    } else {
+      this.debugLog("⚠️ No chart or power history data available for update", {
+        hasChart: !!this.chart,
+        powerHistoryKeys: Object.keys(this.powerHistory || {})
+      });
     }
   },
 
@@ -721,10 +909,10 @@ Module.register("MMM-SmartThings", {
   },
 
   getScripts() {
-    return [
-      "https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.min.js"
-    ];
-  },
+  return [
+    "https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.js" // Fixed URL
+  ];
+},
 
   getStyles() {
     return [

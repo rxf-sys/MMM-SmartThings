@@ -64,8 +64,8 @@
 }
 
 .mmm-smartthings .chart-container canvas {
-  max-width: 100%;
-  height: 200px !important;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
 }
 
 /* ===== Devices Container ===== */
@@ -135,10 +135,11 @@
 }
 
 .mmm-smartthings .device-header i {
-  font-size: 16px;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
   margin-right: 8px;
-  opacity: 0.8;
-  min-width: 16px;
+  text-align: center;
 }
 
 /* ===== SVG Device Icons ===== */
@@ -360,11 +361,11 @@
   .mmm-smartthings.horizontal .devices-container {
     flex-direction: column;
   }
-  
+
   .mmm-smartthings.grid .devices-container {
     grid-template-columns: 1fr;
   }
-  
+
   .mmm-smartthings .chart-container canvas {
     height: 150px !important;
   }
