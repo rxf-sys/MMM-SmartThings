@@ -532,30 +532,3 @@ The module provides these extension points:
 ## Credits
 
 Developed for the MagicMirror² platform. Uses the Samsung SmartThings API, Chart.js for visualizations, and Font Awesome for icons.
-
-## Changelog
-
-### Version 1.1.0 (Current)
-- ✨ Completely redesigned user interface with modern card-based design
-- 📊 Interactive power consumption charts with Chart.js integration
-- 🔔 Intelligent notifications system with smart appliance detection
-- 🎨 Multiple themes (Default, Dark, Colorful) and layout options (Vertical, Horizontal, Grid)
-- 📱 Responsive design optimized for all screen sizes including Raspberry Pi
-- 🛠️ Enhanced error handling with exponential backoff and graceful degradation
-- ⚡ Performance optimizations including intelligent caching and memory management
-- 🎯 Advanced device recognition and categorization with SVG icon system
-- 🔧 Comprehensive configuration options with 25+ customizable parameters
-- 📈 Historical data visualization with configurable time ranges
-- 🚨 Real-time alerts and proactive monitoring
-- 🐛 **Debug mode** with detailed logging and browser console tools
-- 📊 **Performance monitoring** with render time tracking and API call analysis
-- 💾 **Intelligent caching** system with 30-second TTL and smart invalidation
-- 🔄 **Automatic retry logic** with exponential backoff for reliable operation
-- 🧹 **Memory management** with automatic cleanup and garbage collection
-- ⌨️ **Keyboard shortcuts** for debug operations (Ctrl+Shift+D/C/P)
-- 📈 **Real-time performance stats** display option
-- 🎛️ **Debug console tools** for advanced troubleshooting
-- 🔍 **API call monitoring** with success/failure rate tracking
-
-### Version 1.0.0
-- Initial release with basic SmartThings integration
