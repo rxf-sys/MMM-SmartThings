@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <style>
+      .icon-fill { fill: #ffffff; opacity: 0.9; }
+      .icon-stroke { stroke: #ffffff; stroke-width: 1.5; fill: none; opacity: 0.9; }
+      .light-glow { fill: #FFF59D; opacity: 0.8; }
+    </style>
+  </defs>
+  
+  <!-- Bulb shape -->
+  <path d="M16 4 C20 4 24 8 24 12 C24 15 22 17 20 18 L20 22 L12 22 L12 18 C10 17 8 15 8 12 C8 8 12 4 16 4 Z" class="icon-fill"/>
+  
+  <!-- Bulb outline -->
+  <path d="M16 4 C20 4 24 8 24 12 C24 15 22 17 20 18 L20 22 L12 22 L12 18 C10 17 8 15 8 12 C8 8 12 4 16 4 Z" class="icon-stroke"/>
+  
+  <!-- Filament -->
+  <path d="M14 10 Q16 8 18 10 Q16 12 14 10" class="icon-stroke" stroke-width="1"/>
+  <line x1="15" y1="12" x2="17" y2="14" class="icon-stroke" stroke-width="1"/>
+  
+  <!-- Base/screw threads -->
+  <rect x="13" y="22" width="6" height="4" class="icon-stroke"/>
+  <line x1="13" y1="23" x2="19" y2="23" class="icon-stroke" stroke-width="0.5"/>
+  <line x1="13" y1="25" x2="19" y2="25" class="icon-stroke" stroke-width="0.5"/>
+  
+  <!-- Light rays -->
+  <g opacity="0.7">
+    <line x1="16" y1="2" x2="16" y2="4" class="icon-stroke" stroke-width="1"/>
+    <line x1="6" y1="12" x2="8" y2="12" class="icon-stroke" stroke-width="1"/>
+    <line x1="24" y1="12" x2="26" y2="12" class="icon-stroke" stroke-width="1"/>
+    <line x1="9.2" y1="6.8" x2="10.6" y2="8.2" class="icon-stroke" stroke-width="1"/>
+    <line x1="22.8" y1="6.8" x2="21.4" y2="8.2" class="icon-stroke" stroke-width="1"/>
+    <line x1="9.2" y1="17.2" x2="10.6" y2="15.8" class="icon-stroke" stroke-width="1"/>
+    <line x1="22.8" y1="17.2" x2="21.4" y2="15.8" class="icon-stroke" stroke-width="1"/>
+  </g>
+  
+  <!-- Glow effect -->
+  <circle cx="16" cy="12" r="8" class="light-glow" opacity="0.2"/>
+</svg>

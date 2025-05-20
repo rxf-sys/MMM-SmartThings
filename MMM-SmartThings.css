@@ -1,0 +1,405 @@
+/* ===== MMM-SmartThings Stylesheet ===== */
+
+.mmm-smartthings {
+  font-family: 'Roboto', 'Helvetica', sans-serif;
+  color: #fff;
+  text-align: left;
+}
+
+/* ===== Header ===== */
+.mmm-smartthings .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mmm-smartthings .header .title {
+  font-size: 18px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.mmm-smartthings .header .last-update {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* ===== Loading & Error States ===== */
+.mmm-smartthings .loading,
+.mmm-smartthings .error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-size: 14px;
+}
+
+.mmm-smartthings .loading i,
+.mmm-smartthings .error i {
+  margin-right: 8px;
+}
+
+.mmm-smartthings .error {
+  color: #ff6b6b;
+}
+
+/* ===== Chart Container ===== */
+.mmm-smartthings .chart-container {
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mmm-smartthings .chart-container h3 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  text-align: center;
+}
+
+.mmm-smartthings .chart-container canvas {
+  max-width: 100%;
+  height: 200px !important;
+}
+
+/* ===== Devices Container ===== */
+.mmm-smartthings .devices-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mmm-smartthings.horizontal .devices-container {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.mmm-smartthings.grid .devices-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+/* ===== Device Cards ===== */
+.mmm-smartthings .device {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 12px;
+  border-left: 3px solid #4CAF50;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mmm-smartthings .device:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+/* ===== Device Types ===== */
+.mmm-smartthings .device.switch-device {
+  border-left-color: #2196F3;
+}
+
+.mmm-smartthings .device.power-device {
+  border-left-color: #FF9800;
+}
+
+.mmm-smartthings .device.temperature-device {
+  border-left-color: #F44336;
+}
+
+.mmm-smartthings .device.contact-device {
+  border-left-color: #9C27B0;
+}
+
+.mmm-smartthings .device.motion-device {
+  border-left-color: #E91E63;
+}
+
+.mmm-smartthings .device.battery-device {
+  border-left-color: #4CAF50;
+}
+
+/* ===== Device Header ===== */
+.mmm-smartthings .device-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.mmm-smartthings .device-header i {
+  font-size: 16px;
+  margin-right: 8px;
+  opacity: 0.8;
+  min-width: 16px;
+}
+
+/* ===== SVG Device Icons ===== */
+.mmm-smartthings .device-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.9;
+  display: inline-block;
+  vertical-align: middle;
+  min-width: 24px;
+}
+
+/* Device Type Specific Icons */
+.mmm-smartthings .device-icon.switch-device {
+  background-image: url('modules/MMM-SmartThings/icons/switch.svg');
+}
+
+.mmm-smartthings .device-icon.power-device {
+  background-image: url('modules/MMM-SmartThings/icons/power.svg');
+}
+
+.mmm-smartthings .device-icon.temperature-device {
+  background-image: url('modules/MMM-SmartThings/icons/temperature.svg');
+}
+
+.mmm-smartthings .device-icon.contact-device {
+  background-image: url('modules/MMM-SmartThings/icons/contact.svg');
+}
+
+.mmm-smartthings .device-icon.motion-device {
+  background-image: url('modules/MMM-SmartThings/icons/motion.svg');
+}
+
+.mmm-smartthings .device-icon.battery-device {
+  background-image: url('modules/MMM-SmartThings/icons/battery.svg');
+}
+
+/* Named Device Icons (device name based) */
+.mmm-smartthings .device-icon.waschmaschine {
+  background-image: url('modules/MMM-SmartThings/icons/waschmaschine.svg');
+}
+
+.mmm-smartthings .device-icon.trockner {
+  background-image: url('modules/MMM-SmartThings/icons/trockner.svg');
+}
+
+.mmm-smartthings .device-icon.licht {
+  background-image: url('modules/MMM-SmartThings/icons/licht.svg');
+}
+
+.mmm-smartthings .device-icon.tuer,
+.mmm-smartthings .device-icon.door {
+  background-image: url('modules/MMM-SmartThings/icons/tür.svg');
+}
+
+.mmm-smartthings .device-icon.fenster,
+.mmm-smartthings .device-icon.window {
+  background-image: url('modules/MMM-SmartThings/icons/fenster.svg');
+}
+
+.mmm-smartthings .device-icon.generic,
+.mmm-smartthings .device-icon.unknown {
+  background-image: url('modules/MMM-SmartThings/icons/generic.svg');
+}
+
+/* Icon size variants */
+.mmm-smartthings.compact .device-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.mmm-smartthings .device-icon.large {
+  width: 32px;
+  height: 32px;
+}
+
+/* Icon hover effects */
+.mmm-smartthings .device-icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  transition: all 0.2s ease;
+}
+
+.mmm-smartthings .device-name {
+  font-weight: 500;
+  font-size: 14px;
+  flex-grow: 1;
+}
+
+.mmm-smartthings .device-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== Status Colors ===== */
+.mmm-smartthings .device-status.on {
+  background-color: rgba(76, 175, 80, 0.3);
+  color: #4CAF50;
+}
+
+.mmm-smartthings .device-status.off {
+  background-color: rgba(158, 158, 158, 0.3);
+  color: #9E9E9E;
+}
+
+.mmm-smartthings .device-status.open {
+  background-color: rgba(255, 193, 7, 0.3);
+  color: #FFC107;
+}
+
+.mmm-smartthings .device-status.closed {
+  background-color: rgba(76, 175, 80, 0.3);
+  color: #4CAF50;
+}
+
+.mmm-smartthings .device-status.active {
+  background-color: rgba(255, 87, 34, 0.3);
+  color: #FF5722;
+}
+
+.mmm-smartthings .device-status.unknown {
+  background-color: rgba(96, 125, 139, 0.3);
+  color: #607D8B;
+}
+
+/* ===== Device Details ===== */
+.mmm-smartthings .device-details {
+  margin-top: 8px;
+}
+
+.mmm-smartthings .capability {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.mmm-smartthings .capability-label {
+  opacity: 0.7;
+  margin-right: 8px;
+}
+
+.mmm-smartthings .capability-value {
+  font-weight: 500;
+  color: #fff;
+}
+
+/* ===== Compact Mode ===== */
+.mmm-smartthings .devices-container.compact .device {
+  padding: 8px 12px;
+}
+
+.mmm-smartthings .devices-container.compact .device-header {
+  margin-bottom: 0;
+}
+
+.mmm-smartthings .devices-container.compact .device-name {
+  font-size: 13px;
+}
+
+.mmm-smartthings .devices-container.compact .device-status {
+  font-size: 10px;
+  padding: 1px 6px;
+}
+
+/* ===== Dark Theme ===== */
+.mmm-smartthings.dark {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.mmm-smartthings.dark .device {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mmm-smartthings.dark .chart-container {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ===== Colorful Theme ===== */
+.mmm-smartthings.colorful .device.switch-device {
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.1), rgba(33, 150, 243, 0.05));
+}
+
+.mmm-smartthings.colorful .device.power-device {
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 152, 0, 0.05));
+}
+
+.mmm-smartthings.colorful .device.temperature-device {
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(244, 67, 54, 0.05));
+}
+
+.mmm-smartthings.colorful .device.contact-device {
+  background: linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(156, 39, 176, 0.05));
+}
+
+.mmm-smartthings.colorful .device.motion-device {
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(233, 30, 99, 0.05));
+}
+
+.mmm-smartthings.colorful .device.battery-device {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 600px) {
+  .mmm-smartthings.horizontal .devices-container {
+    flex-direction: column;
+  }
+  
+  .mmm-smartthings.grid .devices-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .mmm-smartthings .chart-container canvas {
+    height: 150px !important;
+  }
+}
+
+/* ===== Animations ===== */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.mmm-smartthings .device-status.active {
+  animation: pulse 2s infinite;
+}
+
+.mmm-smartthings .loading i {
+  animation: fa-spin 2s infinite linear;
+}
+
+/* ===== Scrollbar Styling ===== */
+.mmm-smartthings .devices-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mmm-smartthings .devices-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.mmm-smartthings .devices-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.mmm-smartthings .devices-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}

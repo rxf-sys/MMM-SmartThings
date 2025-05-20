@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <style>
+      .icon-fill { fill: #ffffff; opacity: 0.9; }
+      .icon-stroke { stroke: #ffffff; stroke-width: 1.5; fill: none; opacity: 0.9; }
+    </style>
+  </defs>
+  
+  <!-- Microchip body -->
+  <rect x="8" y="8" width="16" height="16" rx="2" class="icon-stroke"/>
+  
+  <!-- Inner chip -->
+  <rect x="11" y="11" width="10" height="10" rx="1" class="icon-fill" opacity="0.3"/>
+  
+  <!-- Chip core -->
+  <rect x="13" y="13" width="6" height="6" rx="1" class="icon-fill"/>
+  
+  <!-- Circuit paths -->
+  <line x1="14" y1="13" x2="14" y2="11" class="icon-stroke" stroke-width="1"/>
+  <line x1="16" y1="13" x2="16" y2="11" class="icon-stroke" stroke-width="1"/>
+  <line x1="18" y1="13" x2="18" y2="11" class="icon-stroke" stroke-width="1"/>
+  
+  <line x1="19" y1="14" x2="21" y2="14" class="icon-stroke" stroke-width="1"/>
+  <line x1="19" y1="16" x2="21" y2="16" class="icon-stroke" stroke-width="1"/>
+  <line x1="19" y1="18" x2="21" y2="18" class="icon-stroke" stroke-width="1"/>
+  
+  <line x1="14" y1="19" x2="14" y2="21" class="icon-stroke" stroke-width="1"/>
+  <line x1="16" y1="19" x2="16" y2="21" class="icon-stroke" stroke-width="1"/>
+  <line x1="18" y1="19" x2="18" y2="21" class="icon-stroke" stroke-width="1"/>
+  
+  <line x1="13" y1="14" x2="11" y2="14" class="icon-stroke" stroke-width="1"/>
+  <line x1="13" y1="16" x2="11" y2="16" class="icon-stroke" stroke-width="1"/>
+  <line x1="13" y1="18" x2="11" y2="18" class="icon-stroke" stroke-width="1"/>
+  
+  <!-- Pin connectors -->
+  <g class="icon-stroke" stroke-width="1">
+    <!-- Top pins -->
+    <line x1="12" y1="8" x2="12" y2="6"/>
+    <line x1="14" y1="8" x2="14" y2="6"/>
+    <line x1="16" y1="8" x2="16" y2="6"/>
+    <line x1="18" y1="8" x2="18" y2="6"/>
+    <line x1="20" y1="8" x2="20" y2="6"/>
+    
+    <!-- Right pins -->
+    <line x1="24" y1="12" x2="26" y2="12"/>
+    <line x1="24" y1="14" x2="26" y2="14"/>
+    <line x1="24" y1="16" x2="26" y2="16"/>
+    <line x1="24" y1="18" x2="26" y2="18"/>
+    <line x1="24" y1="20" x2="26" y2="20"/>
+    
+    <!-- Bottom pins -->
+    <line x1="12" y1="24" x2="12" y2="26"/>
+    <line x1="14" y1="24" x2="14" y2="26"/>
+    <line x1="16" y1="24" x2="16" y2="26"/>
+    <line x1="18" y1="24" x2="18" y2="26"/>
+    <line x1="20" y1="24" x2="20" y2="26"/>
+    
+    <!-- Left pins -->
+    <line x1="8" y1="12" x2="6" y2="12"/>
+    <line x1="8" y1="14" x2="6" y2="14"/>
+    <line x1="8" y1="16" x2="6" y2="16"/>
+    <line x1="8" y1="18" x2="6" y2="18"/>
+    <line x1="8" y1="20" x2="6" y2="20"/>
+  </g>
+  
+  <!-- Corner notch for orientation -->
+  <circle cx="10" cy="10" r="1" class="icon-fill"/>
+</svg>

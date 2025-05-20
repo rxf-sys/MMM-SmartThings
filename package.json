@@ -1,0 +1,53 @@
+{
+  "name": "mmm-smartthings",
+  "version": "2.0.0",
+  "description": "Ein MagicMirror-Modul zur Anzeige von SmartThings-Geräten mit Echtzeitdaten, Charts und intelligenten Benachrichtigungen",
+  "main": "MMM-SmartThings.js",
+  "keywords": [
+    "MagicMirror",
+    "SmartThings",
+    "IoT",
+    "Smart Home",
+    "Samsung",
+    "charts",
+    "notifications"
+  ],
+  "author": {
+    "name": "SmartThings Module Developer",
+    "email": "developer@example.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/example/MMM-SmartThings.git"
+  },
+  "bugs": {
+    "url": "https://github.com/example/MMM-SmartThings/issues"
+  },
+  "homepage": "https://github.com/example/MMM-SmartThings#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "chart.js": "^4.4.9",
+    "mmm-smartthings": "file:",
+    "MMM-SmartThings": "file:"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.27.0",
+    "eslint": "^8.57.1",
+    "globals": "^16.1.0",
+    "prettier": "^3.0.0"
+  },
+  "scripts": {
+    "lint": "eslint *.js",
+    "format": "prettier --write *.js *.css *.md",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "magicmirror": {
+    "moduleType": "third-party",
+    "category": "smart-home",
+    "minVersion": "2.20.0"
+  }
+}
