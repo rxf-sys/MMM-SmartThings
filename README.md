@@ -1,22 +1,65 @@
-# MMM-SmartThings - Minimalistisch
+# MMM-SmartThings Enhanced
 
-Ein elegantes MagicMirror-Modul für SmartThings mit Fokus auf Design und Benutzerfreundlichkeit.
+<div align="center">
+  <img src="https://img.shields.io/badge/MagicMirror-Module-blue" alt="MagicMirror Module">
+  <img src="https://img.shields.io/badge/Version-2.0.0-green" alt="Version">
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License">
+  <img src="https://img.shields.io/badge/Samsung-Enhanced-red" alt="Samsung Enhanced">
+</div>
 
-## ✨ Features
+Ein elegantes und leistungsstarkes MagicMirror²-Modul für Samsung SmartThings mit fortgeschrittenen Features wie Echtzeit-Energiemonitoring, intelligenten Benachrichtigungen und Samsung-spezifischen Enhancements.
 
-- **Minimalistisches Design** - Clean und modern
-- **Energieverbrauch Anzeige** - Aktuell, heute, diesen/letzten Monat  
-- **Samsung Appliances** - Waschmaschine, Trockner, TV Support
-- **3 Design-Themes** - Default, Dark, Modern
-- **Responsive Layout** - Vertikal und horizontal
-- **Performance-optimiert** - Caching und intelligente Updates
+## Hauptfeatures
 
-## 📱 Screenshot
+### **Modernes Design**
+- **3 Premium-Themes**: Default, Dark, Modern mit Glasmorphismus-Effekten
+- **Responsive Layout**: Automatische Anpassung an verschiedene Bildschirmgrößen
+- **MagicMirror-Design-System**: Konsistent mit anderen Modulen
+- **Animationen**: Sanfte Übergänge und Statusanzeigen
 
-![Smart Home Interface](https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Smart+Home+Interface)
+### **Echtes Energiemonitoring**
+- **Live-Verbrauchsdaten** direkt von SmartThings API
+- **Historische Trends** mit Vergleich zu Vormonaten
+- **Intelligente Berechnungen** für Geräte ohne native Energiemessung
+- **Kostenberechnungen** und Effizienzanalysen
 
-## 🚀 Installation
+### **Samsung Appliances Enhanced**
+- **Waschmaschinen**: Status, Restzeit, Programmende-Benachrichtigungen
+- **Trockner**: Betriebsmodi, Completion-Alerts, Energieverbrauch
+- **Smart TVs**: Medienstatus, Lautstärke, Kanal-Information
+- **Spezielle Samsung CE Capabilities** für erweiterte Features
 
+### **Intelligente Benachrichtigungen**
+- **Appliance-Finish-Alerts**: Automatische Benachrichtigungen wenn Geräte fertig sind
+- **Status-Change-Notifications**: Bei wichtigen Zustandsänderungen
+- **Browser-Notifications**: Integration in MagicMirror Notification-System
+
+### **Performance & Zuverlässigkeit**
+- **Intelligentes Caching** mit TTL-Management
+- **Retry-Logic** für API-Ausfälle
+- **Error-Handling** mit detailliertem Debugging
+- **Memory-optimiert** für Dauerbetrieb
+
+## Screenshots
+
+### Modern Theme mit Energiemonitoring
+```
+┌─ Smart Home ─────────────────── 15:42 ─┐
+│  ⚡ Energieverbrauch                     │
+│  🧺 Samsung Waschmaschine              │
+│      Aktuell: 1,200W    Heute: 2.4kWh  │
+│      Diesen Monat: 45.2kWh ↗           │
+│                                         │
+│  🏠 Wohnzimmer TV         [Ein]  📺    │
+│      Vol: 15   Kanal: ARD              │
+│  💡 Küchenlicht          [Aus]  💡     │
+│  🚪 Haustür             [Geschlossen]   │
+└─────────────────────────────────────────┘
+```
+
+## Quick Start
+
+### 1. Installation
 ```bash
 cd ~/MagicMirror/modules
 git clone https://github.com/example/MMM-SmartThings.git
@@ -24,70 +67,51 @@ cd MMM-SmartThings
 npm install
 ```
 
-## ⚙️ Konfiguration
+### 2. SmartThings Token erstellen
+1. Gehen Sie zu: https://smartthings.developer.samsung.com/workspace/
+2. **Personal Access Token** → **Generate new token**
+3. Wählen Sie folgende Scopes:
+   ```
+   ✅ r:devices:*           (Geräte lesen)
+   ✅ r:deviceprofiles:*    (Geräteprofile lesen)
+   ✅ r:events:*            (Events/Historie lesen)
+   ✅ r:locations:*         (Standorte lesen)
+   ```
 
-### Basis-Setup
-
-```javascript
-{
-  module: "MMM-SmartThings",
-  position: "top_right",
-  header: "Smart Home",
-  config: {
-    token: "YOUR_SMARTTHINGS_TOKEN",
-    deviceIds: ["device-1", "device-2", "device-3"],
-    energyDeviceIds: ["washing-machine", "samsung-tv"]
-  }
-}
-```
-
-### 🔑 Token erstellen
-
-1. **SmartThings Developer Console** öffnen: https://smartthings.developer.samsung.com/workspace/
-2. **Personal Access Token** erstellen
-3. **Berechtigungen** wählen:
-   - `r:devices:*`
-   - `r:deviceprofiles:*` 
-   - `r:events:*`
-
-### 🔍 Device IDs finden
-
+### 3. Device IDs ermitteln
+Mit curl (Linux/Mac):
 ```bash
-# Mit curl
 curl -H "Authorization: Bearer YOUR_TOKEN" \
-     https://api.smartthings.com/v1/devices
-
-# Mit PowerShell
-Invoke-RestMethod -Uri "https://api.smartthings.com/v1/devices" \
-  -Headers @{ "Authorization" = "Bearer YOUR_TOKEN" }
+     "https://api.smartthings.com/v1/devices" | jq '.items[] | {deviceId, label}'
 ```
 
-## 🎨 Design-Optionen
+Mit PowerShell (Windows):
+```powershell
+$headers = @{ "Authorization" = "Bearer YOUR_TOKEN" }
+(Invoke-RestMethod -Uri "https://api.smartthings.com/v1/devices" -Headers $headers).items | 
+  Select-Object deviceId, label
+```
 
-| Option | Beschreibung | Werte |
-|--------|-------------|-------|
-| `theme` | Design-Theme | `"default"`, `"dark"`, `"modern"` |
-| `layout` | Layout-Richtung | `"vertical"`, `"horizontal"` |
-| `compactMode` | Kompakte Darstellung | `true/false` |
-| `showIcons` | Device-Icons anzeigen | `true/false` |
-| `showEnergyStats` | Energieverbrauch anzeigen | `true/false` |
+### 4. Basis-Konfiguration
+```javascript
+{
+  module: "MMM-SmartThings",
+  position: "top_right",
+  header: "Smart Home",
+  config: {
+    token: "YOUR_SMARTTHINGS_TOKEN",
+    deviceIds: [
+      "12345678-1234-1234-1234-123456789abc",
+      "87654321-4321-4321-4321-cba987654321"
+    ],
+    energyDeviceIds: [
+      "12345678-1234-1234-1234-123456789abc"  // Nur Geräte mit Energiemessung
+    ]
+  }
+}
+```
 
-## ⚡ Energieverbrauch
-
-Das Modul zeigt Energiestatistiken für Samsung-Geräte:
-
-- **Aktuelle Leistung** (W)
-- **Energie heute** (kWh)
-- **Energie diesen Monat** (kWh)  
-- **Energie letzten Monat** (kWh)
-
-### Unterstützte Geräte
-- Samsung Waschmaschinen
-- Samsung Trockner
-- Samsung TVs
-- Smart Plugs mit Energiemessung
-
-## 📋 Vollständige Konfiguration
+## Vollständige Konfiguration
 
 ```javascript
 {
@@ -95,151 +119,361 @@ Das Modul zeigt Energiestatistiken für Samsung-Geräte:
   position: "top_right",
   header: "Smart Home",
   config: {
-    // ERFORDERLICH
-    token: "YOUR_SMARTTHINGS_TOKEN",
-    deviceIds: ["device-1", "device-2"],
+    // ========== ERFORDERLICH ==========
+    token: "YOUR_SMARTTHINGS_TOKEN",              // SmartThings Personal Access Token
+    deviceIds: ["device-1", "device-2"],          // Array der zu überwachenden Geräte-IDs
     
-    // ENERGIE-MONITORING
-    showEnergyStats: true,
-    energyDeviceIds: ["energy-device-1"],
+    // ========== ENERGIEMONITORING ==========
+    showEnergyStats: true,                        // Energiestatistiken anzeigen
+    energyDeviceIds: ["device-1"],                // Geräte mit Energiemessung
+    showRealTimeEnergy: true,                     // Echte SmartThings Energiedaten verwenden
+    showEnergyTrends: true,                       // Trend-Indikatoren (↗↘→)
     
-    // ANZEIGE
-    showIcons: true,
-    showLastUpdate: true,
-    maxDevices: 10,
+    // ========== SAMSUNG ENHANCEMENTS ==========
+    samsungEnhanced: true,                        // Samsung-spezifische Features
+    enableNotifications: true,                    // Intelligente Benachrichtigungen
     
-    // DESIGN
-    layout: "vertical",        // "vertical", "horizontal"
-    theme: "modern",           // "default", "dark", "modern"  
-    compactMode: false,
+    // ========== ANZEIGE & LAYOUT ==========
+    layout: "vertical",                           // "vertical" | "horizontal"
+    theme: "modern",                              // "default" | "dark" | "modern"
+    compactMode: false,                           // Kompakte Darstellung
+    showIcons: true,                              // Device-Icons anzeigen
+    showLastUpdate: true,                         // Zeitstempel der letzten Aktualisierung
+    maxDevices: 10,                               // Maximum anzuzeigende Geräte
+    showAnimations: true,                         // Sanfte Animationen
     
-    // PERFORMANCE
-    updateInterval: 60000,     // 1 Minute
-    debug: false
+    // ========== UPDATE-INTERVALLE ==========
+    updateInterval: 60 * 1000,                   // Standard-Updates (1 Minute)
+    energyUpdateInterval: 5 * 60 * 1000,         // Energie-Updates (5 Minuten)
+    
+    // ========== DEBUGGING ==========
+    debug: false                                  // Debug-Modus für Entwicklung
   }
 }
 ```
 
-## 🎭 Themes
+## Design-Themes
 
 ### Default Theme
-- **Transparent** mit Glasmorphismus
-- **Blaue Akzente** und sanfte Übergänge
-- **Perfekt** für helle Spiegel
+- **Glasmorphismus-Design** mit subtiler Transparenz
+- **Blaue Akzentfarben** passend zu SmartThings
+- **Optimiert für helle Umgebungen**
 
-### Dark Theme  
-- **Dunkler Hintergrund** für besseren Kontrast
-- **Reduzierte Transparenz**
-- **Ideal** für dunkle Umgebungen
+```javascript
+config: {
+  theme: "default"
+}
+```
+
+### Dark Theme
+- **Dunkler Hintergrund** für bessere Lesbarkeit
+- **Erhöhte Kontraste** für nächtliche Nutzung
+- **Reduzierte Helligkeit**
+
+```javascript
+config: {
+  theme: "dark"
+}
+```
 
 ### Modern Theme
-- **Gradient-Hintergründe**
-- **Erweiterte Glaseffekte** 
-- **Premium Look** mit besonderen Akzenten
+- **Gradient-Hintergründe** mit Premium-Look
+- **Erweiterte Glaseffekte** und Schatten
+- **Moderne Farbpalette** mit Accents
 
-## 🔧 Beispiel-Konfigurationen
+```javascript
+config: {
+  theme: "modern"
+}
+```
 
-### Kompakt für wenig Platz
+## Unterstützte Geräte
+
+| Gerätetyp | Standard Support | Samsung Enhanced | Energiemonitoring |
+|-----------|------------------|------------------|-------------------|
+| **Samsung Waschmaschinen** | ✅ Status | ✅ Restzeit, Programme, Alerts | ✅ Echtzeit-Verbrauch |
+| **Samsung Trockner** | ✅ Status | ✅ Betriebsmodi, Completion-Alerts | ✅ Echtzeit-Verbrauch |
+| **Samsung Smart TVs** | ✅ Ein/Aus | ✅ Mediensteuerung, Lautstärke | ✅ Standby-Verbrauch |
+| **Smart Switches** | ✅ Ein/Aus Status | ➖ | ✅ Verbrauchsmessung |
+| **Smart Plugs** | ✅ Ein/Aus Status | ➖ | ✅ Echtzeit-Verbrauch |
+| **Sensoren** | ✅ Temperatur, Kontakt, Bewegung | ➖ | ➖ |
+| **LED-Strips** | ✅ Ein/Aus, Helligkeit | ➖ | ✅ Verbrauchsmessung |
+
+### Samsung CE (Consumer Electronics) Features
+- **Betriebszustände**: run, pause, finished, error
+- **Restzeit-Anzeige**: Minuten/Stunden bis Programmende
+- **Kindersicherung**: Status der Kids-Lock-Funktion
+- **Waschmittel-Status**: Füllstand bei kompatiblen Geräten
+
+## Energiemonitoring im Detail
+
+### Echte SmartThings Daten
+Das Modul nutzt die native `powerConsumptionReport` Capability von SmartThings:
 ```javascript
 {
-  module: "MMM-SmartThings",
-  position: "bottom_left",
-  config: {
-    token: "YOUR_TOKEN",
-    deviceIds: ["device-1", "device-2"],
-    compactMode: true,
-    theme: "dark",
-    layout: "horizontal",
-    showEnergyStats: false
+  "powerConsumptionReport": {
+    "powerConsumption": {
+      "value": {
+        "power": 1200,              // Aktuelle Leistung in Watt
+        "energy": 2400,             // Gesamtenergie in Wh
+        "deltaEnergy": 120,         // Energie seit letztem Report
+        "start": "2024-01-01T00:00:00Z",
+        "end": "2024-01-01T01:00:00Z"
+      }
+    }
   }
 }
 ```
 
-### Energie-fokussiert
+### Berechnete Werte
+Für Geräte ohne native Energiemessung verwendet das Modul intelligente Berechnungen:
+- **Gerätespezifische Profile** basierend auf Typ und Hersteller
+- **Nutzungsmuster-Erkennung** für realistische Schätzungen
+- **Historische Daten** für Trend-Berechnungen
+
+### Trend-Indikatoren
+- **↗ Steigend**: >5% Zunahme zum Vormonat
+- **↘ Fallend**: >5% Abnahme zum Vormonat  
+- **→ Stabil**: ±5% Schwankung
+
+## Benachrichtigungssystem
+
+### Appliance-Benachrichtigungen
+```javascript
+// Samsung Waschmaschine fertig
+{
+  type: "appliance_finished",
+  message: "Samsung Waschmaschine ist fertig!",
+  title: "SmartThings",
+  timer: 8000
+}
+
+// Samsung Trockner fertig  
+{
+  type: "appliance_finished", 
+  message: "Samsung Trockner ist fertig!",
+  title: "SmartThings",
+  timer: 8000
+}
+```
+
+### Geräte-Status-Änderungen
+- Ein/Aus-Schalter betätigt
+- Tür/Fenster geöffnet/geschlossen
+- Bewegungsmelder aktiviert
+- Temperatur-Schwellwerte überschritten
+
+## Beispiel-Konfigurationen
+
+### Kompakte Sidebar
 ```javascript
 {
-  module: "MMM-SmartThings", 
-  position: "middle_center",
-  header: "Energieverbrauch",
+  module: "MMM-SmartThings",
+  position: "top_left", 
   config: {
     token: "YOUR_TOKEN",
-    deviceIds: ["washer", "dryer", "tv"],
-    energyDeviceIds: ["washer", "dryer", "tv"],
-    theme: "modern",
-    showEnergyStats: true,
+    deviceIds: ["device-1", "device-2", "device-3"],
+    compactMode: true,
+    theme: "dark",
+    layout: "vertical",
+    showEnergyStats: false,
     maxDevices: 5
   }
 }
 ```
 
-## 🐛 Debugging
+### Energie-Dashboard
+```javascript
+{
+  module: "MMM-SmartThings",
+  position: "middle_center",
+  header: "Energieverbrauch Live",
+  config: {
+    token: "YOUR_TOKEN", 
+    deviceIds: ["washer", "dryer", "tv", "dishwasher"],
+    energyDeviceIds: ["washer", "dryer", "tv", "dishwasher"],
+    theme: "modern",
+    layout: "horizontal",
+    showEnergyStats: true,
+    showRealTimeEnergy: true,
+    showEnergyTrends: true,
+    samsungEnhanced: true,
+    updateInterval: 30000  // 30 Sekunden für Live-Updates
+  }
+}
+```
 
-Debug-Modus aktivieren:
+### Samsung Appliance Center
+```javascript
+{
+  module: "MMM-SmartThings",
+  position: "bottom_right",
+  header: "Samsung Geräte",
+  config: {
+    token: "YOUR_TOKEN",
+    deviceIds: ["samsung-washer", "samsung-dryer", "samsung-tv"],
+    energyDeviceIds: ["samsung-washer", "samsung-dryer"],
+    theme: "default",
+    samsungEnhanced: true,
+    enableNotifications: true,
+    showEnergyStats: true,
+    showAnimations: true,
+    compactMode: false
+  }
+}
+```
+
+## 🛠️ Entwicklung & Debugging
+
+### Debug-Modus aktivieren
 ```javascript
 config: {
   debug: true
 }
 ```
 
-Browser-Konsole öffnen für detaillierte Logs:
-- Browser F12 → Console
-- Logs beginnen mit `[MMM-SmartThings]`
+### Log-Ausgaben
+**MagicMirror Logs:**
+```bash
+pm2 logs mm
+# oder
+tail -f ~/.pm2/logs/mm-out.log
+```
 
-## 🚀 Performance
+**Browser-Konsole:**
+- F12 → Console Tab
+- Logs beginnen mit `[MMM-SmartThings Enhanced]`
 
-- **Intelligentes Caching** (1 Minute TTL)
-- **Optimierte API-Calls** mit Retry-Logic
-- **Minimale Speichernutzung**
-- **Responsive Updates** nur bei Änderungen
+### API-Tests
+```bash
+# Geräte auflisten
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     "https://api.smartthings.com/v1/devices"
 
-## 🔗 Unterstützte Geräte
+# Gerätestatus abrufen
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     "https://api.smartthings.com/v1/devices/DEVICE_ID/status"
 
-| Typ | Samsung SmartThings Support |
-|-----|---------------------------|
-| **Waschmaschinen** | ✅ Vollständig (Status + Energie) |
-| **Trockner** | ✅ Vollständig (Status + Energie) |
-| **TVs** | ✅ Vollständig (Status + Energie) |
-| **Smart Switches** | ✅ Status |
-| **Sensoren** | ✅ Status (Temperatur, Kontakt, Bewegung) |
-| **Smart Plugs** | ✅ Status + Energie |
+# Energieverbrauch abrufen
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     "https://api.smartthings.com/v1/devices/DEVICE_ID/events?capability=powerConsumptionReport"
+```
 
-## 📝 Changelog
+## Troubleshooting
 
-### v2.0.0 (Aktuell)
-- ✨ Minimalistisches UI-Design
-- ✨ Energieverbrauch-Anzeige  
-- ✨ 3 moderne Design-Themes
-- ✨ Verbesserte Samsung-Geräte-Unterstützung
-- ⚡ Performance-Optimierungen
-- 🐛 Bug-Fixes und Stabilität
+### Häufige Probleme
 
-## 🆘 Häufige Probleme
+**❌ Module lädt nicht**
+- Token-Format prüfen (sollte mit `c6592bf7-...` beginnen)
+- Device IDs validieren (UUID-Format erforderlich)
+- MagicMirror Neustart: `pm2 restart mm`
 
-**Module lädt nicht?**
-- Token und Device IDs prüfen
-- MagicMirror Logs checken: `pm2 logs mm`
+**❌ Keine Geräte-Daten**
+```javascript
+// Debug aktivieren und Logs prüfen
+config: {
+  debug: true
+}
+```
 
-**Keine Energie-Daten?**
+**❌ Energiedaten fehlen**
 - `energyDeviceIds` konfigurieren
-- Gerät muss `powerConsumptionReport` unterstützen
+- Gerät muss `powerConsumptionReport` oder `powerMeter` unterstützen
+- Alternative: Intelligente Berechnung wird automatisch verwendet
 
-**Device IDs finden?**
-- SmartThings API direkt abfragen (siehe oben)
-- Debug-Modus aktivieren für Details
+**❌ Samsung-Features funktionieren nicht** 
+- `samsungEnhanced: true` setzen
+- Gerät muss Samsung CE Capabilities haben
+- Samsung Developer Account erforderlich
 
-## 📄 Lizenz
+### Erweiterte Diagnostik
+```javascript
+{
+  module: "MMM-SmartThings",
+  config: {
+    debug: true,
+    // Minimale Konfiguration zum Testen
+    token: "YOUR_TOKEN",
+    deviceIds: ["ONE_DEVICE_ID"],
+    updateInterval: 10000,  // 10 Sekunden für schnelles Testing
+    energyUpdateInterval: 30000
+  }
+}
+```
 
-MIT License - siehe [LICENSE.md](LICENSE.md)
+## Performance-Optimierung
 
-## 🤝 Beitragen
+### Empfohlene Einstellungen
+```javascript
+config: {
+  // Reduzierte Update-Frequenz für bessere Performance
+  updateInterval: 2 * 60 * 1000,         // 2 Minuten
+  energyUpdateInterval: 10 * 60 * 1000,  // 10 Minuten
+  
+  // Begrenzte Gerätezahl
+  maxDevices: 8,
+  
+  // Kompakter Modus für weniger DOM-Elemente
+  compactMode: true,
+  
+  // Animationen deaktivieren bei schwacher Hardware
+  showAnimations: false
+}
+```
 
-Issues und Pull Requests sind willkommen!
+### Cache-Verhalten
+- **Standard-Cache**: 1 Minute TTL
+- **Energie-Cache**: 5 Minuten TTL
+- **Automatische Bereinigung** bei Speichermangel
 
-1. Fork das Repository
-2. Feature Branch erstellen
-3. Änderungen commiten  
-4. Pull Request erstellen
+## Roadmap
+
+### Version 2.1.0 (Q2 2024)
+- [ ] **Chart.js Integration** für Energieverlauf-Diagramme
+- [ ] **Erweiterte Themes** mit benutzerdefinierten Farben
+- [ ] **Location-Support** für Raum-basierte Gruppierung
+- [ ] **Voice-Alerts** über MagicMirror Notification-System
+
+### Version 2.2.0 (Q3 2024)
+- [ ] **SmartThings Rules Integration** 
+- [ ] **Geofence-Support** für Anwesenheits-basierte Features
+- [ ] **Multi-Location-Support** für mehrere SmartThings-Hubs
+- [ ] **Advanced Scheduling** für zeitbasierte Automatisierung
+
+## Beitragen
+
+Contributions sind herzlich willkommen! 
+
+### Entwicklungsumgebung
+```bash
+git clone https://github.com/example/MMM-SmartThings.git
+cd MMM-SmartThings
+npm install
+npm run lint  # ESLint-Prüfung
+npm run format  # Code-Formatierung
+```
+
+### Pull Request Guideline
+1. **Fork** das Repository
+2. **Feature Branch** erstellen: `git checkout -b feature/amazing-feature`
+3. **Änderungen committen**: `git commit -m 'Add amazing feature'`
+4. **Branch pushen**: `git push origin feature/amazing-feature`
+5. **Pull Request** erstellen
+
+## Lizenz
+
+MIT License - siehe [LICENSE.md](LICENSE.md) für Details.
+
+## Credits
+
+- **MagicMirror²** Framework
+- **Samsung SmartThings API**
+- **Chart.js** für zukünftige Diagramm-Features
+- **Axios** für HTTP-Requests
 
 ---
 
-*Entwickelt für MagicMirror² mit ❤️*
+<div align="center">
+  <strong>Entwickelt mit ❤️ für die MagicMirror Community</strong><br>
+  <sub>Samsung SmartThings Enhanced Integration</sub>
+</div>
