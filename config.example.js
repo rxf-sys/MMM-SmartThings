@@ -1,11 +1,13 @@
 /* 
- * MMM-SmartThings - Beispielkonfiguration
+ * MMM-SmartThings - Beispielkonfiguration v1.1.0
  * 
  * Kopieren Sie diese Datei und passen Sie die Werte an Ihre SmartThings-Umgebung an.
  * Fügen Sie die Konfiguration zu Ihrer config/config.js in MagicMirror hinzu.
  */
 
+// ==========================================
 // VOLLSTÄNDIGE BEISPIELKONFIGURATION
+// ==========================================
 {
   module: "MMM-SmartThings",
   position: "top_right", // top_left, top_center, top_right, middle_center, bottom_left, bottom_center, bottom_right
@@ -16,11 +18,12 @@
     
     // SmartThings Personal Access Token
     // Erstellen Sie einen Token unter: https://smartthings.developer.samsung.com/workspace/
+    // Benötigte Berechtigungen: r:devices:*, r:deviceprofiles:*, r:events:*
     token: "YOUR_SMARTTHINGS_TOKEN_HERE",
     
     // Liste der Geräte-IDs, die angezeigt werden sollen
-    // Ermitteln Sie Ihre Device IDs mit:
-    // curl -H "Authorization: Bearer YOUR_TOKEN" https://api.smartthings.com/v1/devices
+    // Ermitteln Sie Ihre Device IDs mit PowerShell:
+    // Invoke-RestMethod -Uri "https://api.smartthings.com/v1/devices" -Headers @{ "Authorization" = "Bearer YOUR_TOKEN" }
     deviceIds: [
       "device-id-1",
       "device-id-2", 
@@ -38,7 +41,7 @@
     // ANZEIGE-OPTIONEN  
     // ==========================================
     
-    showIcons: true,           // Icons für Gerätetypen anzeigen
+    showIcons: true,           // SVG-Icons für Gerätetypen anzeigen
     showChart: true,           // Stromverbrauchschart anzeigen
     showLastUpdate: true,      // Zeitpunkt der letzten Aktualisierung anzeigen
     maxDevices: 10,            // Maximale Anzahl angezeigter Geräte
@@ -58,6 +61,7 @@
     chartHistoryHours: 24,     // Anzahl Stunden für Chart-Historie
     
     // IDs der Geräte, die im Stromverbrauchschart angezeigt werden sollen
+    // Nur Geräte mit powerMeter-Capability verwenden
     powerDeviceIds: [
       "power-device-id-1",
       "power-device-id-2"
@@ -73,7 +77,16 @@
       dryer: true,             // Trockner fertig  
       lowBattery: true,        // Niedrige Batterie (< 20%)
       doorOpen: true           // Tür/Fenster geöffnet
-    }
+    },
+    
+    // ==========================================
+    // PERFORMANCE & DEBUG (NEU in v2.0.0)
+    // ==========================================
+    
+    debug: false,                    // Debug-Modus aktivieren
+    enablePerformanceMonitoring: true, // Performance-Tracking
+    cacheEnabled: true,              // Intelligentes Caching
+    showPerformanceStats: false      // Performance-Stats anzeigen
   }
 },
 
@@ -84,13 +97,16 @@
 // KOMPAKTE KONFIGURATION (Minimal)
 {
   module: "MMM-SmartThings",
-  position: "bottom_left",
+  position: "bottom_left", 
+  header: "Smart Home",
   config: {
     token: "YOUR_TOKEN",
     deviceIds: ["device-1", "device-2"],
     compactMode: true,
     showChart: false,
-    layout: "horizontal"
+    showLastUpdate: false,
+    layout: "horizontal",
+    theme: "default"
   }
 },
 
@@ -98,14 +114,17 @@
 {
   module: "MMM-SmartThings", 
   position: "middle_center",
+  header: "Stromverbrauch",
   config: {
     token: "YOUR_TOKEN",
-    deviceIds: ["device-1"],
-    powerDeviceIds: ["device-1"],
+    deviceIds: ["power-device-1"],
+    powerDeviceIds: ["power-device-1"],
     showChart: true,
     chartHistoryHours: 48,
     layout: "vertical",
-    theme: "dark"
+    theme: "dark",
+    maxDevices: 3,
+    updateInterval: 30 * 1000    // Häufigere Updates für Charts
   }
 },
 
@@ -113,49 +132,77 @@
 {
   module: "MMM-SmartThings",
   position: "top_center", 
+  header: "Alle Geräte",
   config: {
     token: "YOUR_TOKEN",
     deviceIds: ["dev-1", "dev-2", "dev-3", "dev-4", "dev-5", "dev-6"],
     layout: "grid",
     maxDevices: 20,
     compactMode: true,
-    theme: "colorful"
+    theme: "colorful",
+    showChart: false,
+    showLastUpdate: false
+  }
+},
+
+// DEBUG & ENTWICKLUNG KONFIGURATION
+{
+  module: "MMM-SmartThings",
+  position: "bottom_right",
+  header: "Debug",
+  config: {
+    token: "YOUR_TOKEN",
+    deviceIds: ["test-device-1", "test-device-2"],
+    debug: true,                     // Debug-Modus aktiviert
+    enablePerformanceMonitoring: true,
+    showPerformanceStats: true,      // Performance-Stats sichtbar
+    updateInterval: 10 * 1000,       // Schnelle Updates für Testing
+    compactMode: true,
+    layout: "vertical"
+  }
+},
+
+// PRODUCTION-OPTIMIERTE KONFIGURATION
+{
+  module: "MMM-SmartThings",
+  position: "top_right",
+  header: "Smart Home",
+  config: {
+    token: "YOUR_TOKEN",
+    deviceIds: [
+      "living-room-switch",
+      "front-door-sensor", 
+      "washing-machine",
+      "kitchen-power-meter"
+    ],
+    powerDeviceIds: [
+      "kitchen-power-meter",
+      "washing-machine"
+    ],
+    
+    // Optimierte Performance-Einstellungen
+    updateInterval: 60 * 1000,
+    chartUpdateInterval: 10 * 60 * 1000,
+    cacheEnabled: true,
+    enablePerformanceMonitoring: true,
+    
+    // UI-Einstellungen
+    showIcons: true,
+    showChart: true,
+    showLastUpdate: true,
+    maxDevices: 8,
+    compactMode: false,
+    layout: "vertical",
+    theme: "default",
+    chartHistoryHours: 24,
+    
+    // Selektive Benachrichtigungen
+    notifications: {
+      enabled: true,
+      washingMachine: true,
+      dryer: false,          // Kein Trockner vorhanden
+      lowBattery: true,
+      doorOpen: true
+    }
   }
 }
-
-// ==========================================
-// GERÄTE-ID ERMITTLUNG
-// ==========================================
-
-/*
-# Mit curl alle Geräte auflisten:
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-     https://api.smartthings.com/v1/devices | \
-     jq '.items[] | {deviceId, label, deviceTypeName}'
-
-# Oder detaillierte Info für ein bestimmtes Gerät:
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-     https://api.smartthings.com/v1/devices/DEVICE_ID
-
-# Status eines Geräts abfragen:
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-     https://api.smartthings.com/v1/devices/DEVICE_ID/status
-*/
-
-// ==========================================
-// TYPISCHE DEVICE TYPES
-// ==========================================
-
-/*
-Häufige SmartThings Device Types:
-- OCF Switch: Normale Schalter/Steckdosen
-- OCF Motion Sensor: Bewegungsmelder  
-- OCF Contact Sensor: Tür/Fensterkontakte
-- Power Meter: Stromverbrauchsmesser
-- Temperature Sensor: Temperatursensoren
-- Multipurpose Sensor: Mehrzwecksensoren
-- Smart Lock: Intelligente Türschlösser
-- Smart Bulb: Intelligente Beleuchtung
-- Washing Machine: Waschmaschinen
-- Dryer: Wäschetrockner
-*/

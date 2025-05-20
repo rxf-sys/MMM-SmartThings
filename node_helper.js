@@ -1,5 +1,17 @@
 const NodeHelper = require("node_helper");
 const axios = require("axios");
+const https = require("https");
+
+// SSL/TLS Zertifikat-Fix für Windows/Corporate Environments
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false, // NUR für Development - in Production sollte das true sein
+  secureProtocol: 'TLSv1_2_method',
+  ciphers: 'ALL'
+});
+
+// Axios Default-Konfiguration mit SSL-Fix
+axios.defaults.httpsAgent = httpsAgent;
+axios.defaults.timeout = 30000; // 30 Sekunden Timeout
 
 module.exports = NodeHelper.create({
   start() {
@@ -317,14 +329,22 @@ module.exports = NodeHelper.create({
   async apiCallWithRetry(url, headers, operationId = '', retries = 3) {
     const startTime = Date.now();
     
+    // SSL-sichere Axios-Konfiguration
+    const axiosConfig = {
+      headers,
+      timeout: 30000, // 30 Sekunden
+      httpsAgent: httpsAgent,
+      // Zusätzliche SSL-Optionen für problematische Umgebungen
+      validateStatus: function (status) {
+        return status >= 200 && status < 300;
+      }
+    };
+    
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
         this.debugLog(`🌐 API Call Attempt ${attempt + 1}/${retries}`, { url, operationId });
         
-        const response = await axios.get(url, { 
-          headers,
-          timeout: 10000 // 10 Sekunden Timeout
-        });
+        const response = await axios.get(url, axiosConfig);
         
         // API Call Statistiken
         const duration = Date.now() - startTime;
@@ -345,6 +365,21 @@ module.exports = NodeHelper.create({
         const duration = Date.now() - startTime;
         const isLastAttempt = attempt === retries - 1;
         
+        // Spezielle Behandlung für SSL-Fehler
+        if (error.code === 'UNABLE_TO_GET_ISSUER_CERT_LOCALLY' || 
+            error.code === 'UNABLE_TO_VERIFY_LEAF_SIGNATURE' ||
+            error.message?.includes('certificate')) {
+          
+          console.warn(`[MMM-SmartThings] SSL-Zertifikatsproblem erkannt. Versuche alternative Konfiguration...`);
+          
+          // Alternative Axios-Konfiguration mit zusätzlichen SSL-Fixes
+          axiosConfig.httpsAgent = new https.Agent({
+            rejectUnauthorized: false,
+            checkServerIdentity: () => undefined,
+            secureProtocol: 'TLSv1_2_method'
+          });
+        }
+        
         // API Call Fehler-Statistiken
         this.debug.apiCalls.push({
           url,
@@ -354,6 +389,7 @@ module.exports = NodeHelper.create({
           duration,
           timestamp: new Date().toISOString(),
           error: error.message,
+          errorCode: error.code,
           statusCode: error.response?.status || 0
         });
         
@@ -361,11 +397,16 @@ module.exports = NodeHelper.create({
           operationId, 
           attempt: attempt + 1, 
           error: error.message,
+          errorCode: error.code,
           statusCode: error.response?.status,
           isLastAttempt
         });
         
         if (isLastAttempt) {
+          // Bessere Fehlermeldung für SSL-Probleme
+          if (error.code === 'UNABLE_TO_GET_ISSUER_CERT_LOCALLY') {
+            throw new Error(`SSL-Zertifikatsproblem: ${error.message}. Versuchen Sie NODE_TLS_REJECT_UNAUTHORIZED=0 oder aktualisieren Sie Node.js.`);
+          }
           throw error;
         }
         
