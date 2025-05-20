@@ -377,24 +377,6 @@ This module is responsive and adapts to different screen sizes automatically. Yo
 **"Token fehlt" Error**
 - Verify your token is correctly set in the configuration
 - Ensure the token has the required permissions
-
-**Devices Not Appearing**
-- Check device IDs in browser developer console
-- Test device IDs directly with the SmartThings API
-- Verify devices are online in the SmartThings app
-
-**Charts Not Displaying**
-- Ensure Chart.js is loading properly
-- Verify `powerDeviceIds` are configured correctly
-- Check that devices actually report power consumption
-
-## Troubleshooting
-
-### Common Issues
-
-**"Token fehlt" Error**
-- Verify your token is correctly set in the configuration
-- Ensure the token has the required permissions
 - Check token expiration in SmartThings Developer Console
 
 **Devices Not Appearing**
