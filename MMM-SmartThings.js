@@ -3,21 +3,21 @@ Module.register("MMM-SmartThings", {
     // API Konfiguration
     token: "",
     deviceIds: [],
-    
+
     // Update-Intervalle
     updateInterval: 60 * 1000, // 1 Minute
-    
+
     // Anzeige-Optionen
     showIcons: true,
     showChart: true,
     showLastUpdate: true,
     maxDevices: 10,
-    
+
     // Chart-Konfiguration
     chartHistoryHours: 24,
     chartUpdateInterval: 5 * 60 * 1000, // 5 Minuten
     powerDeviceIds: [], // Geräte für Stromverbrauchschart
-    
+
     // Benachrichtigungen
     notifications: {
       enabled: true,
@@ -26,12 +26,12 @@ Module.register("MMM-SmartThings", {
       lowBattery: true,
       doorOpen: true
     },
-    
+
     // Layout
     layout: "vertical", // "vertical", "horizontal", "grid"
     compactMode: false,
     theme: "default", // "default", "dark", "colorful"
-    
+
     // Performance & Debug
     debug: false,
     enablePerformanceMonitoring: true,
@@ -43,14 +43,14 @@ Module.register("MMM-SmartThings", {
 
   start() {
     Log.info(`[${this.name}] Modul wird gestartet...`);
-    
+
     // Initialisierung
     this.devices = [];
     this.powerHistory = {};
     this.lastUpdate = null;
     this.error = null;
     this.loaded = false;
-    
+
     // Performance Monitoring
     this.performance = {
       renderTimes: [],
@@ -58,48 +58,58 @@ Module.register("MMM-SmartThings", {
       lastRenderTime: 0,
       domUpdates: 0
     };
-    
+
     // Debug-Capabilities
     this.debugData = null;
-    
+
     // Validierung der Konfiguration
     if (!this.config.token) {
       this.error = "SmartThings Token fehlt in der Konfiguration";
       Log.error(`[${this.name}] ${this.error}`);
       return;
     }
-    
+
     if (!this.config.deviceIds.length) {
       this.error = "Keine Device IDs konfiguriert";
       Log.error(`[${this.name}] ${this.error}`);
       return;
     }
-    
+
     // Debug-Modus aktivieren
     if (this.config.debug) {
       this.enableDebugMode();
     }
-    
+
     // Performance Monitoring aktivieren
     if (this.config.enablePerformanceMonitoring) {
       this.startPerformanceMonitoring();
     }
-    
+
     // Erste Datenabfrage
     this.getData();
-    
+
     // Regelmäßige Updates
     this.updateInterval = setInterval(() => {
       this.getData();
     }, this.config.updateInterval);
-    
-    // Chart-Updates (wenn aktiviert)
-    if (this.config.showChart && this.config.powerDeviceIds.length > 0) {
+
+    // Chart-Updates (wenn aktiviert und powerDeviceIds konfiguriert)
+    if (this.config.showChart && this.config.powerDeviceIds && this.config.powerDeviceIds.length > 0) {
+      Log.info(`[${this.name}] Chart-Updates aktiviert für ${this.config.powerDeviceIds.length} Geräte`);
+
+      // Erste Chart-Daten sofort laden
+      setTimeout(() => {
+        this.updatePowerHistory();
+      }, 5000); // 5 Sekunden nach Start
+
+      // Regelmäßige Chart-Updates
       this.chartInterval = setInterval(() => {
         this.updatePowerHistory();
       }, this.config.chartUpdateInterval);
+    } else {
+      Log.warn(`[${this.name}] Charts deaktiviert. showChart: ${this.config.showChart}, powerDeviceIds: ${this.config.powerDeviceIds?.length || 0}`);
     }
-    
+
     // Keyboard shortcuts für Debug
     if (this.config.debug) {
       this.setupDebugKeyboardShortcuts();
@@ -115,7 +125,7 @@ Module.register("MMM-SmartThings", {
       notifications: this.config.notifications,
       debug: this.config.debug
     });
-    
+
     // Performance Tracking
     if (this.config.enablePerformanceMonitoring) {
       this.performance.updateTimes.push({
@@ -123,14 +133,14 @@ Module.register("MMM-SmartThings", {
         startTime,
         type: 'getData'
       });
-      
+
       // Begrenzt auf 50 Einträge
       if (this.performance.updateTimes.length > 50) {
         this.performance.updateTimes = this.performance.updateTimes.slice(-25);
       }
     }
   },
-  
+
   updatePowerHistory() {
     this.sendSocketNotification("GET_POWER_HISTORY", {
       token: this.config.token,
@@ -141,43 +151,43 @@ Module.register("MMM-SmartThings", {
 
   socketNotificationReceived(notification, payload) {
     const startTime = Date.now();
-    
+
     switch (notification) {
       case "DEVICE_DATA":
         this.devices = payload.devices;
         this.lastUpdate = new Date();
         this.error = null;
         this.loaded = true;
-        
+
         // Performance-Daten von Backend
         if (payload.performance && this.config.enablePerformanceMonitoring) {
           this.performance.lastBackendDuration = payload.performance.duration;
           this.performance.lastCacheHit = payload.performance.cacheHit;
         }
-        
+
         this.updateDom(300);
         break;
-        
+
       case "POWER_HISTORY":
         this.powerHistory = payload;
         this.updateChart();
         break;
-        
+
       case "NOTIFICATION":
         this.showNotification(payload);
         break;
-        
+
       case "DEBUG_DATA":
         this.debugData = payload;
         Log.info(`[${this.name}] Debug data received:`, payload);
         break;
-        
+
       case "ERROR":
         this.error = payload.message;
         this.loaded = true;
         this.updateDom(300);
         Log.error(`[${this.name}] ${payload.message}`);
-        
+
         // Performance-Tracking für Fehler
         if (this.config.enablePerformanceMonitoring) {
           this.performance.errors = this.performance.errors || [];
@@ -189,7 +199,7 @@ Module.register("MMM-SmartThings", {
         }
         break;
     }
-    
+
     // Socket Notification Performance Tracking
     if (this.config.enablePerformanceMonitoring) {
       const duration = Date.now() - startTime;
@@ -199,7 +209,7 @@ Module.register("MMM-SmartThings", {
         notification,
         duration
       });
-      
+
       // Begrenzt auf 30 Einträge
       if (this.performance.socketNotifications.length > 30) {
         this.performance.socketNotifications = this.performance.socketNotifications.slice(-15);
@@ -211,21 +221,21 @@ Module.register("MMM-SmartThings", {
     const startTime = Date.now();
     const wrapper = document.createElement("div");
     wrapper.className = `mmm-smartthings ${this.config.theme} ${this.config.layout}`;
-    
+
     // Performance Stats anzeigen (wenn aktiviert)
     if (this.config.showPerformanceStats && this.performance.lastRenderTime) {
       const perfDiv = document.createElement("div");
       perfDiv.className = "performance-stats";
       perfDiv.innerHTML = `
         <small>
-          Render: ${this.performance.lastRenderTime}ms | 
+          Render: ${this.performance.lastRenderTime}ms |
           Backend: ${this.performance.lastBackendDuration || 'N/A'}ms |
           Cache: ${this.performance.lastCacheHit ? 'HIT' : 'MISS'}
         </small>
       `;
       wrapper.appendChild(perfDiv);
     }
-    
+
     // Fehlerbehandlung
     if (this.error) {
       wrapper.innerHTML += `
@@ -235,12 +245,12 @@ Module.register("MMM-SmartThings", {
           ${this.config.debug ? `<br><small>Check console for debug information</small>` : ''}
         </div>
       `;
-      
+
       // Performance-Messung auch bei Fehlern
       this.trackRenderPerformance(startTime);
       return wrapper;
     }
-    
+
     // Ladezustand
     if (!this.loaded) {
       wrapper.innerHTML += `
@@ -249,22 +259,22 @@ Module.register("MMM-SmartThings", {
           <span>Lade SmartThings Daten...</span>
         </div>
       `;
-      
+
       this.trackRenderPerformance(startTime);
       return wrapper;
     }
-    
+
     // Header
     const header = document.createElement("div");
     header.className = "header";
     header.innerHTML = `
       <i class="fab fa-microsoft"></i>
       <span class="title">SmartThings</span>
-      ${this.config.showLastUpdate && this.lastUpdate ? 
+      ${this.config.showLastUpdate && this.lastUpdate ?
         `<span class="last-update">Zuletzt: ${this.formatTime(this.lastUpdate)}</span>` : ''}
     `;
     wrapper.appendChild(header);
-    
+
     // Chart (wenn aktiviert)
     if (this.config.showChart && this.config.powerDeviceIds.length > 0) {
       const chartContainer = document.createElement("div");
@@ -275,60 +285,60 @@ Module.register("MMM-SmartThings", {
       `;
       wrapper.appendChild(chartContainer);
     }
-    
+
     // Geräte-Container
     const devicesContainer = document.createElement("div");
     devicesContainer.className = `devices-container ${this.config.compactMode ? 'compact' : ''}`;
-    
+
     this.devices.slice(0, this.config.maxDevices).forEach(device => {
       const deviceElement = this.createDeviceElement(device);
       devicesContainer.appendChild(deviceElement);
     });
-    
+
     wrapper.appendChild(devicesContainer);
-    
+
     // Chart nach DOM-Update erstellen
     if (this.config.showChart && this.config.powerDeviceIds.length > 0) {
       setTimeout(() => this.initChart(), 100);
     }
-    
+
     // Performance-Messung
     this.trackRenderPerformance(startTime);
-    
+
     return wrapper;
   },
-  
+
   createDeviceElement(device) {
     const deviceDiv = document.createElement("div");
     deviceDiv.className = `device ${this.getDeviceTypeClass(device)}`;
-    
+
     // Device Header
     const header = document.createElement("div");
     header.className = "device-header";
-    
+
     if (this.config.showIcons) {
       const icon = document.createElement("div");
       icon.className = `device-icon ${this.getDeviceIconClass(device)}`;
       header.appendChild(icon);
     }
-    
+
     const name = document.createElement("span");
     name.className = "device-name";
     name.textContent = device.name;
     header.appendChild(name);
-    
+
     const status = document.createElement("span");
     status.className = `device-status ${this.getDeviceStatus(device)}`;
     status.textContent = this.getStatusText(device);
     header.appendChild(status);
-    
+
     deviceDiv.appendChild(header);
-    
+
     // Device Details
     if (!this.config.compactMode) {
       const details = document.createElement("div");
       details.className = "device-details";
-      
+
       Object.entries(this.getRelevantCapabilities(device)).forEach(([key, capability]) => {
         const detail = document.createElement("div");
         detail.className = "capability";
@@ -338,36 +348,36 @@ Module.register("MMM-SmartThings", {
         `;
         details.appendChild(detail);
       });
-      
+
       deviceDiv.appendChild(details);
     }
-    
+
     return deviceDiv;
   },
-  
+
   getDeviceTypeClass(device) {
     const main = device.components?.main || {};
-    
+
     if (main.switch) return "switch-device";
     if (main.powerMeter) return "power-device";
     if (main.temperatureMeasurement) return "temperature-device";
     if (main.contactSensor) return "contact-device";
     if (main.motionSensor) return "motion-device";
     if (main.battery) return "battery-device";
-    
+
     return "generic-device";
   },
-  
+
   getDeviceIcon(device) {
     const main = device.components?.main || {};
-    
+
     // Spezifische Gerätetypen
     if (device.name.toLowerCase().includes("wasch")) return "fas fa-tshirt";
     if (device.name.toLowerCase().includes("trockner")) return "fas fa-wind";
     if (device.name.toLowerCase().includes("licht")) return "fas fa-lightbulb";
     if (device.name.toLowerCase().includes("tür")) return "fas fa-door-open";
     if (device.name.toLowerCase().includes("fenster")) return "fas fa-window-maximize";
-    
+
     // Capability-basierte Icons
     if (main.switch) return "fas fa-power-off";
     if (main.powerMeter) return "fas fa-bolt";
@@ -375,21 +385,21 @@ Module.register("MMM-SmartThings", {
     if (main.contactSensor) return "fas fa-door-closed";
     if (main.motionSensor) return "fas fa-running";
     if (main.battery) return "fas fa-battery-half";
-    
+
     return "fas fa-microchip";
   },
-  
+
   getDeviceIconClass(device) {
     const main = device.components?.main || {};
     const deviceName = device.name.toLowerCase();
-    
+
     // Spezifische Gerätetypen nach Name
     if (deviceName.includes("wasch")) return "waschmaschine";
     if (deviceName.includes("trockner")) return "trockner";
     if (deviceName.includes("licht") || deviceName.includes("light")) return "licht";
     if (deviceName.includes("tür") || deviceName.includes("door")) return "tuer";
     if (deviceName.includes("fenster") || deviceName.includes("window")) return "fenster";
-    
+
     // Capability-basierte Icons
     if (main.switch) return "switch-device";
     if (main.powerMeter) return "power-device";
@@ -397,39 +407,39 @@ Module.register("MMM-SmartThings", {
     if (main.contactSensor) return "contact-device";
     if (main.motionSensor) return "motion-device";
     if (main.battery) return "battery-device";
-    
+
     return "generic";
   },
-  
+
   getDeviceStatus(device) {
     const main = device.components?.main || {};
-    
+
     if (main.switch?.switch?.value === "on") return "on";
     if (main.switch?.switch?.value === "off") return "off";
     if (main.contactSensor?.contact?.value === "open") return "open";
     if (main.contactSensor?.contact?.value === "closed") return "closed";
     if (main.motionSensor?.motion?.value === "active") return "active";
-    
+
     return "unknown";
   },
-  
+
   getStatusText(device) {
     const main = device.components?.main || {};
-    
+
     if (main.switch?.switch?.value === "on") return "Ein";
     if (main.switch?.switch?.value === "off") return "Aus";
     if (main.contactSensor?.contact?.value === "open") return "Offen";
     if (main.contactSensor?.contact?.value === "closed") return "Geschlossen";
     if (main.motionSensor?.motion?.value === "active") return "Bewegung";
     if (main.motionSensor?.motion?.value === "inactive") return "Inaktiv";
-    
+
     return "Unbekannt";
   },
-  
+
   getRelevantCapabilities(device) {
     const main = device.components?.main || {};
     const relevant = {};
-    
+
     // Wichtige Capabilities filtern und anzeigen
     if (main.powerMeter?.power) {
       relevant.power = main.powerMeter.power;
@@ -449,26 +459,26 @@ Module.register("MMM-SmartThings", {
     if (main.illuminanceMeasurement?.illuminance) {
       relevant.illuminance = main.illuminanceMeasurement.illuminance;
     }
-    
+
     return relevant;
   },
-  
+
   getCapabilityLabel(key) {
     const labels = {
       power: "Leistung",
       energy: "Energie",
-      temperature: "Temperatur", 
+      temperature: "Temperatur",
       humidity: "Luftfeuchtigkeit",
       battery: "Batterie",
       illuminance: "Helligkeit"
     };
     return labels[key] || key;
   },
-  
+
   formatCapabilityValue(key, capability) {
     const value = capability.value;
     const unit = capability.unit || "";
-    
+
     switch (key) {
       case "power":
         return `${value} W`;
@@ -486,22 +496,22 @@ Module.register("MMM-SmartThings", {
         return `${value} ${unit}`.trim();
     }
   },
-  
+
   initChart() {
     const canvas = document.getElementById(`smartthings-chart-${this.identifier}`);
     if (!canvas || !window.Chart) return;
-    
+
     const ctx = canvas.getContext('2d');
-    
+
     // Alte Chart-Instanz zerstören
     if (this.chart) {
       this.chart.destroy();
     }
-    
+
     const datasets = Object.entries(this.powerHistory).map(([ deviceId, data], index) => {
       const device = this.devices.find(d => d.deviceId === deviceId);
       const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'];
-      
+
       return {
         label: device?.name || deviceId,
         data: data.values,
@@ -511,7 +521,7 @@ Module.register("MMM-SmartThings", {
         tension: 0.1
       };
     });
-    
+
     this.chart = new Chart(ctx, {
       type: 'line',
       data: {
@@ -545,13 +555,13 @@ Module.register("MMM-SmartThings", {
       }
     });
   },
-  
+
   updateChart() {
     if (this.chart && this.powerHistory) {
       const datasets = Object.entries(this.powerHistory).map(([deviceId, data], index) => {
         const device = this.devices.find(d => d.deviceId === deviceId);
         const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'];
-        
+
         return {
           label: device?.name || deviceId,
           data: data.values,
@@ -561,13 +571,13 @@ Module.register("MMM-SmartThings", {
           tension: 0.1
         };
       });
-      
+
       this.chart.data.labels = this.powerHistory[Object.keys(this.powerHistory)[0]]?.timestamps || [];
       this.chart.data.datasets = datasets;
       this.chart.update();
     }
   },
-  
+
   showNotification(payload) {
     if (this.config.notifications.enabled) {
       this.sendNotification("SHOW_ALERT", {
@@ -578,7 +588,7 @@ Module.register("MMM-SmartThings", {
       });
     }
   },
-  
+
   formatTime(date) {
     return date.toLocaleTimeString('de-DE', {
       hour: '2-digit',
@@ -590,12 +600,12 @@ Module.register("MMM-SmartThings", {
   enableDebugMode() {
     Log.info(`[${this.name}] Debug-Modus aktiviert`);
     this.sendSocketNotification("ENABLE_DEBUG", { enabled: true });
-    
+
     // Debug-Informationen alle 30 Sekunden abrufen
     this.debugInterval = setInterval(() => {
       this.sendSocketNotification("GET_DEBUG_DATA");
     }, 30000);
-    
+
     // Debug-Konsole Nachrichten
     window.MMM_SmartThings_Debug = {
       getPerformance: () => this.performance,
@@ -606,13 +616,13 @@ Module.register("MMM-SmartThings", {
         this.updateDom();
       }
     };
-    
+
     Log.info(`[${this.name}] Debug-Tools verfügbar unter: window.MMM_SmartThings_Debug`);
   },
-  
+
   startPerformanceMonitoring() {
     Log.info(`[${this.name}] Performance-Monitoring aktiviert`);
-    
+
     // Memory Usage Tracking
     this.memoryInterval = setInterval(() => {
       if (performance.memory) {
@@ -623,7 +633,7 @@ Module.register("MMM-SmartThings", {
           total: performance.memory.totalJSHeapSize,
           limit: performance.memory.jsHeapSizeLimit
         });
-        
+
         // Begrenzt auf 20 Einträge
         if (this.performance.memoryUsage.length > 20) {
           this.performance.memoryUsage = this.performance.memoryUsage.slice(-10);
@@ -631,31 +641,31 @@ Module.register("MMM-SmartThings", {
       }
     }, 60000); // Jede Minute
   },
-  
+
   trackRenderPerformance(startTime) {
     if (!this.config.enablePerformanceMonitoring) return;
-    
+
     const renderTime = Date.now() - startTime;
     this.performance.lastRenderTime = renderTime;
     this.performance.domUpdates++;
-    
+
     this.performance.renderTimes.push({
       timestamp: new Date().toISOString(),
       duration: renderTime,
       updateCount: this.performance.domUpdates
     });
-    
+
     // Begrenzt auf 30 Einträge
     if (this.performance.renderTimes.length > 30) {
       this.performance.renderTimes = this.performance.renderTimes.slice(-15);
     }
-    
+
     // Warnung bei langsamen Renders
     if (renderTime > 100) {
       Log.warn(`[${this.name}] Slow render detected: ${renderTime}ms`);
     }
   },
-  
+
   setupDebugKeyboardShortcuts() {
     document.addEventListener('keydown', (event) => {
       // Ctrl+Shift+D für Debug-Daten
@@ -668,14 +678,14 @@ Module.register("MMM-SmartThings", {
         console.log('Devices:', this.devices);
         console.groupEnd();
       }
-      
+
       // Ctrl+Shift+C für Cache leeren
       if (event.ctrlKey && event.shiftKey && event.key === 'C') {
         event.preventDefault();
         this.sendSocketNotification("CLEAR_CACHE");
         Log.info(`[${this.name}] Cache cleared via keyboard shortcut`);
       }
-      
+
       // Ctrl+Shift+P für Performance Stats togglen
       if (event.ctrlKey && event.shiftKey && event.key === 'P') {
         event.preventDefault();
@@ -685,28 +695,28 @@ Module.register("MMM-SmartThings", {
       }
     });
   },
-  
+
   // Cleanup bei Stop
   stop() {
     Log.info(`[${this.name}] Modul wird gestoppt - Cleanup...`);
-    
+
     // Alle Intervals clearen
     if (this.updateInterval) clearInterval(this.updateInterval);
     if (this.chartInterval) clearInterval(this.chartInterval);
     if (this.debugInterval) clearInterval(this.debugInterval);
     if (this.memoryInterval) clearInterval(this.memoryInterval);
-    
+
     // Chart cleanup
     if (this.chart) {
       this.chart.destroy();
       this.chart = null;
     }
-    
+
     // Debug-Tools entfernen
     if (window.MMM_SmartThings_Debug) {
       delete window.MMM_SmartThings_Debug;
     }
-    
+
     Log.info(`[${this.name}] Cleanup abgeschlossen`);
   },
 
